@@ -47,7 +47,7 @@ internal class UDPVoiceRouter : IHandle<ServerFrequenciesChanged>, IHandle<Serve
 
     private UdpClient _listener;
     //private List<double> _recordingFrequencies = new();
-    private UDPVoicePackeRecorder _recordingManager = null;
+    private UDPVoicePacketRecorder _recordingManager = null;
 
 
     private volatile bool _stop;
@@ -126,7 +126,7 @@ internal class UDPVoiceRouter : IHandle<ServerFrequenciesChanged>, IHandle<Serve
         #region recording UDP packets
         if (_serverSettings.GetGeneralSetting(ServerSettingsKeys.RECORD_VOICE_TRANSMISSIONS_ENABLED).BoolValue)
         {
-            _recordingManager = new UDPVoicePackeRecorder();
+            _recordingManager = new UDPVoicePacketRecorder();
             //INIT ARCHIVE RETENTION TIME - Default is 15 minutes
             _recordingManager.MaxArchiveGap = TimeSpan.FromMinutes(_serverSettings.GetGeneralSetting(ServerSettingsKeys.RECORD_VOICE_TRANSMISSIONS_RETENTION).IntValue);
         }
@@ -288,7 +288,6 @@ internal class UDPVoiceRouter : IHandle<ServerFrequenciesChanged>, IHandle<Serve
                                             #region Record the transmission if server recording is enabled and client allows recording
                                             if (client.AllowRecord && _recordingManager != null)
                                             {
-                                                // TODO: 
                                                 // Record the transmission (UDPVoicePacket) to JSON in new thread
                                                 var packetCopy = udpVoicePacket; // capture for closure
                                                 new Thread(() =>

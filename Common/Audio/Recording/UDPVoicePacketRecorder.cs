@@ -7,7 +7,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
 
-public class UDPVoicePackeRecorder
+public class UDPVoicePacketRecorder
 {
     private readonly string _directory;
     private readonly object _lock = new object();
@@ -18,7 +18,7 @@ public class UDPVoicePackeRecorder
     /// </summary>
     public TimeSpan MaxArchiveGap { get; set; } = TimeSpan.FromMinutes(15);
 
-    public UDPVoicePackeRecorder(string directory = null)
+    public UDPVoicePacketRecorder(string directory = null)
     {
         _directory = string.IsNullOrWhiteSpace(directory) ? "VoiceRecordings" : directory;
         if (!Directory.Exists(_directory))
