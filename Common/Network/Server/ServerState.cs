@@ -38,10 +38,7 @@ public class ServerState : IHandle<StartServerMessage>, IHandle<StopServerMessag
     private ServerSync _serverSync;
     private volatile bool _stop = true;
     private HttpServer _httpServer;
-
-    #region WebsocketVoiceServer properties
-    private WebSocketVoiceServer _wsVoiceServer;
-    #endregion
+    private WebSocketVoiceServer _wsVoiceServer = null;
 
     public ServerState(IEventAggregator eventAggregator)
     {
@@ -109,31 +106,25 @@ public class ServerState : IHandle<StartServerMessage>, IHandle<StopServerMessag
         if (_serverListener == null)
         {
             PopulateBanList();
-            StartExport();
-            StartHttpServer(); //need to come before initializing UDPVoiceRouter so WS server will be ready if enabled
 
             _stop = false;
-            _serverListener = new UDPVoiceRouter(_connectedClients, _eventAggregator, _wsVoiceServer);
+            _serverListener = new UDPVoiceRouter(_connectedClients, _eventAggregator);
             var listenerThread = new Thread(_serverListener.Listen);
             listenerThread.Start();
 
             _serverSync = new ServerSync(_connectedClients, _bannedIps, _eventAggregator);
             var serverSyncThread = new Thread(_serverSync.StartListening);
             serverSyncThread.Start();
+
+            StartExport();
+            StartHttpServer();
         }
     }
 
     private void StartHttpServer()
     {
-        _httpServer = new HttpServer(_connectedClients, this);
-        _httpServer.Start();
-        StartWebSocketVoiceServer(); // Start the WebSocket voice server just if HTTP server is enabled (because the clients need to register there to get data)
-    }
-
-    private void StartWebSocketVoiceServer()
-    {
-        _wsVoiceServer = new WebSocketVoiceServer(() => HttpServer.GetRecordingClientIds());
-        Task.Run(() => _wsVoiceServer.Start()); // Run the WebSocket server in a separate task to avoid blocking
+        _httpServer = new HttpServer(_connectedClients, this, _eventAggregator);
+        _httpServer.Start(); // Get the instance here
     }
 
     public void StopServer()

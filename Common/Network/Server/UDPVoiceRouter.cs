@@ -20,7 +20,7 @@ using LogManager = NLog.LogManager;
 
 namespace Ciribob.DCS.SimpleRadio.Standalone.Common.Network.Server;
 
-internal class UDPVoiceRouter : IHandle<ServerFrequenciesChanged>, IHandle<ServerStateMessage>
+public class UDPVoiceRouter : IHandle<ServerFrequenciesChanged>, IHandle<ServerStateMessage>, IHandle<WebSocketServerStarted>
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
@@ -53,14 +53,13 @@ internal class UDPVoiceRouter : IHandle<ServerFrequenciesChanged>, IHandle<Serve
 
     private TransmissionLoggingQueue _transmissionLoggingQueue;
 
-    private readonly WebSocketVoiceServer _wsVoiceServer;
+    private WebSocketVoiceServer WebSocketVoiceServer = null;
 
-    public UDPVoiceRouter(ConcurrentDictionary<string, SRClientBase> clientsList, IEventAggregator eventAggregator, WebSocketVoiceServer wsVoiceServer)
+    public UDPVoiceRouter(ConcurrentDictionary<string, SRClientBase> clientsList, IEventAggregator eventAggregator)
     {
         _clientsList = clientsList;
         _eventAggregator = eventAggregator;
         _eventAggregator.SubscribeOnBackgroundThread(this);
-        _wsVoiceServer = wsVoiceServer;
 
         var freqString = _serverSettings.GetGeneralSetting(ServerSettingsKeys.TEST_FREQUENCIES).StringValue;
         UpdateTestFrequencies(freqString);
@@ -83,6 +82,13 @@ internal class UDPVoiceRouter : IHandle<ServerFrequenciesChanged>, IHandle<Serve
     public Task HandleAsync(ServerStateMessage message, CancellationToken cancellationToken)
     {
         //TODO stop the transmission logging queue
+        return Task.CompletedTask;
+    }
+
+    public Task HandleAsync(WebSocketServerStarted message, CancellationToken cancellationToken)
+    {
+        WebSocketVoiceServer = message.Server;
+        //Logger.Info("UDPVoiceRouter: WebSocketVoiceServer instance received via event.");
         return Task.CompletedTask;
     }
 
@@ -283,10 +289,10 @@ internal class UDPVoiceRouter : IHandle<ServerFrequenciesChanged>, IHandle<Serve
                                             #region Push to WebSocket clients
                                             try
                                             {
-                                                if (client.AllowRecord && _wsVoiceServer != null && _wsVoiceServer.IsRunning)
+                                                if (client.AllowRecord && WebSocketVoiceServer != null && WebSocketVoiceServer.IsRunning)
                                                 {
                                                     var packetRawBytesCopy = udpPacket.RawBytes;
-                                                    _ = _wsVoiceServer.BroadcastVoicePacket(packetRawBytesCopy, client, CancellationToken.None);
+                                                    _ = WebSocketVoiceServer.BroadcastVoicePacket(packetRawBytesCopy, client, CancellationToken.None);
                                                 }
                                             }
                                             catch (Exception)

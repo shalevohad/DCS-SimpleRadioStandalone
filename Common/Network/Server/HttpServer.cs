@@ -1,15 +1,19 @@
-﻿using System;
+﻿using Caliburn.Micro;
+using Ciribob.DCS.SimpleRadio.Standalone.Common.Helpers;
+using Ciribob.DCS.SimpleRadio.Standalone.Common.Models;
+using Ciribob.DCS.SimpleRadio.Standalone.Common.Models.EventMessages;
+using Ciribob.DCS.SimpleRadio.Standalone.Common.Models.Player;
+using Ciribob.DCS.SimpleRadio.Standalone.Common.Settings;
+using Ciribob.DCS.SimpleRadio.Standalone.Common.Settings.Setting;
+using NLog;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using Ciribob.DCS.SimpleRadio.Standalone.Common.Helpers;
-using Ciribob.DCS.SimpleRadio.Standalone.Common.Models;
-using Ciribob.DCS.SimpleRadio.Standalone.Common.Models.Player;
-using Ciribob.DCS.SimpleRadio.Standalone.Common.Settings;
-using Ciribob.DCS.SimpleRadio.Standalone.Common.Settings.Setting;
-using NLog;
+using System.Threading.Tasks;
+using LogManager = NLog.LogManager;
 
 namespace Ciribob.DCS.SimpleRadio.Standalone.Common.Network.Server;
 
@@ -20,6 +24,7 @@ public class HttpServer
     private readonly bool _enabled;
     private readonly int _port;
     private readonly ServerState _serverState;
+    private readonly Caliburn.Micro.IEventAggregator _eventAggregator;
 
     private HttpListener _listener;
     
@@ -30,12 +35,14 @@ public class HttpServer
     private static readonly string CLIENTS_LIST = "/clients";
     private static readonly string REGISTER_VOICE_STRAM = "/register/voice/stream/";
 
-    private static readonly ConcurrentDictionary<string, DateTime> _recordingClients = new();
+    private static readonly ConcurrentDictionary<string, (DateTime, string)> _recordingClients = new();
+    private WebSocketVoiceServer _wsVoiceServer = null;
 
-    public HttpServer(ConcurrentDictionary<string, SRClientBase> connectedClients, ServerState serverState)
+    public HttpServer(ConcurrentDictionary<string, SRClientBase> connectedClients, ServerState serverState, Caliburn.Micro.IEventAggregator eventAggregator)
     {
         _connectedClients = connectedClients;
         _serverState = serverState;
+        _eventAggregator = eventAggregator;
         _port = ServerSettingsStore.Instance.GetServerSetting(ServerSettingsKeys.HTTP_SERVER_PORT).IntValue;
         _enabled = ServerSettingsStore.Instance.GetServerSetting(ServerSettingsKeys.HTTP_SERVER_ENABLED).BoolValue;
     }
@@ -49,6 +56,9 @@ public class HttpServer
             _listener.Start();
             Logger.Info("HTTP Server Started on Port " + _port);
             Receive();
+
+            // after starting the HTTP server start the WebSocket voice server because it depends on the HTTP server
+            StartWebSocketVoiceServer();
         }
         else
         {
@@ -62,6 +72,9 @@ public class HttpServer
         {
             Logger.Info("HTTP Server Stopped on Port " + _port);
             _listener.Stop();
+
+            // when stopping the HTTP server also stop the WebSocket voice server
+            StopWebSocketVoiceServer();
         }
     }
 
@@ -188,29 +201,42 @@ public class HttpServer
             }
             else if (context.Request.Url.AbsolutePath == REGISTER_VOICE_STRAM)
             {
-                #region Enforce max connections and refuse if exceeded (responde with 429 status code)
                 int maxConnections = ServerSettingsStore.Instance
                     .GetServerSetting(ServerSettingsKeys.WEBSOCKET_SERVER_MAX_CONNECTIONS).IntValue;
 
-                //dont allow more than maxConnections, send json error response with 429 status code
                 if (_recordingClients.Count >= maxConnections)
                 {
-                    context.Response.StatusCode = 429; // Too Many Requests
+                    context.Response.StatusCode = 429;
                     var responseJson = "{\"error\":\"Maximum number of recording clients reached.\"}";
                     var buffer = Encoding.UTF8.GetBytes(responseJson);
                     context.Response.ContentType = "application/json";
                     context.Response.OutputStream.Write(buffer, 0, buffer.Length);
                     context.Response.OutputStream.Flush();
-                    Logger.Warn("Recording client registration refused: max connections reached.");
+                    Logger.Warn($"Recording client registration refused: max connections reached (max: {maxConnections}).");
                     return;
                 }
-                #endregion
 
-                // Generate a unique ID for the recording client
+                // Get remote IP
+                var remoteIp = context.Request.RemoteEndPoint?.Address.ToString();
+
+                // Check for duplicate IP
+                if (!string.IsNullOrEmpty(remoteIp) && _recordingClients.Values.Any(v => v.Item2 == remoteIp))
+                {
+                    context.Response.StatusCode = 409; // Conflict
+                    var responseJson = "{\"error\":\"A recording client from this IP is already registered.\"}";
+                    var buffer = Encoding.UTF8.GetBytes(responseJson);
+                    context.Response.ContentType = "application/json";
+                    context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                    context.Response.OutputStream.Flush();
+                    Logger.Warn($"Recording client registration refused: duplicate IP {remoteIp}.");
+                    return;
+                }
+
+                // Register new client
                 var id = Guid.NewGuid().ToString();
-                _recordingClients[id] = DateTime.UtcNow;
+                _recordingClients[id] = (DateTime.UtcNow, remoteIp);
+                _eventAggregator.PublishOnBackgroundThreadAsync(new RecordingClientRegistered(id));
 
-                // Respond with the generated ID as JSON
                 context.Response.StatusCode = 200;
                 context.Response.ContentType = "application/json";
                 var response = $"{{\"id\":\"{id}\"}}";
@@ -218,7 +244,7 @@ public class HttpServer
                 context.Response.OutputStream.Write(responseBuffer, 0, responseBuffer.Length);
                 context.Response.OutputStream.Flush();
 
-                Logger.Info($"Recording client '{id}' registered for voice stream.");
+                Logger.Info($"Recording client '{id}' registered for voice stream from IP {remoteIp}.");
                 return;
             }
             else
@@ -235,5 +261,19 @@ public class HttpServer
     public static IEnumerable<string> GetRecordingClientIds()
     {
         return _recordingClients.Keys;
+    }
+
+    public void StartWebSocketVoiceServer()
+    {
+        if (_wsVoiceServer == null)
+        {
+            _wsVoiceServer = new WebSocketVoiceServer(_eventAggregator);
+            Task.Run(() => _wsVoiceServer.Start());
+        }
+    }
+
+    public void StopWebSocketVoiceServer()
+    {
+        _wsVoiceServer?.Stop();
     }
 }

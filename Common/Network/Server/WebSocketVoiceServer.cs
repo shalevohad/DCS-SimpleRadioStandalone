@@ -1,4 +1,7 @@
-﻿using Ciribob.DCS.SimpleRadio.Standalone.Common.Settings;
+﻿using Caliburn.Micro;
+using Ciribob.DCS.SimpleRadio.Standalone.Common.Models.EventMessages;
+using Ciribob.DCS.SimpleRadio.Standalone.Common.Models.Player;
+using Ciribob.DCS.SimpleRadio.Standalone.Common.Settings;
 using Ciribob.DCS.SimpleRadio.Standalone.Common.Settings.Setting;
 using NLog;
 using System;
@@ -6,16 +9,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Text;
-using System.Linq;
-using Ciribob.DCS.SimpleRadio.Standalone.Common.Models;
-using Ciribob.DCS.SimpleRadio.Standalone.Common.Models.Player;
+using LogManager = NLog.LogManager;
 
 namespace Ciribob.DCS.SimpleRadio.Standalone.Common.Network.Server
 {
-    internal class WebSocketVoiceServer
+    public class WebSocketVoiceServer : IHandle<RecordingClientRegistered>, IHandle<RecordingClientDeregistered>
     {
         private HttpListener _listener;
         private CancellationToken _token;
@@ -24,36 +25,64 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Common.Network.Server
         private readonly bool _enabled;
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private readonly Func<IEnumerable<string>> _getAllowedIds;
+        private HashSet<string> _allowedIdsCache = new();
+        private readonly object _allowedIdsLock = new();
+        private readonly IEventAggregator _eventAggregator;
+
         public bool IsRunning => _listener != null && _listener.IsListening;
 
-        public WebSocketVoiceServer(Func<IEnumerable<string>> getAllowedIds)
+        public WebSocketVoiceServer(IEventAggregator eventAggregator)
         {
-            _getAllowedIds = getAllowedIds;
+            _eventAggregator = eventAggregator;
             _port = ServerSettingsStore.Instance.GetServerSetting(ServerSettingsKeys.WEBSOCKET_SERVER_PORT).IntValue;
             _enabled = ServerSettingsStore.Instance.GetServerSetting(ServerSettingsKeys.WEBSOCKET_SERVER_ENABLED).BoolValue;
+            eventAggregator.SubscribeOnBackgroundThread(this);
+        }
+
+        public Task HandleAsync(RecordingClientRegistered message, CancellationToken cancellationToken)
+        {
+            UpdateAllowedIds();
+            return Task.CompletedTask;
+        }
+
+        public Task HandleAsync(RecordingClientDeregistered message, CancellationToken cancellationToken)
+        {
+            UpdateAllowedIds();
+            return Task.CompletedTask;
         }
 
         public void Start()
         {
-            if (_enabled)
+            if (!_enabled)
             {
-                _listener = new HttpListener();
-                _listener.Prefixes.Add("http://*:" + _port + "/");
-                _listener.Start();
-                Logger.Info("WebSocket Voice Server Started on Port " + _port);
-                _token = new CancellationTokenSource().Token;
-                _ = StartAsync(_token);
+                Logger.Info("WebSocket Voice Server DISABLED on Port " + _port);
+                return;
             }
-            else
+
+            if (IsRunning)
             {
-                Logger.Info("WebSocket Voice Server DISABLED on PORT " + _port);
+                Logger.Warn("WebSocket Voice Server is already running on Port " + _port);
+                return;
             }
+
+            //when enabled and not running, start the listener
+            _listener = new HttpListener();
+            _listener.Prefixes.Add("http://*:" + _port + "/");
+            _listener.Start();
+            Logger.Info("WebSocket Voice Server Started on Port " + _port);
+            _token = new CancellationTokenSource().Token;
+
+            // Publish the event here
+            _eventAggregator.PublishOnBackgroundThreadAsync(new WebSocketServerStarted(this));
+
+            _ = StartAsync(_token);
         }
+
         public void Stop()
         {
             try
             {
-                if (_listener != null && _listener.IsListening)
+                if (_listener != null)
                 {
                     _listener.Stop();
                     _listener.Close();
@@ -96,7 +125,13 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Common.Network.Server
                     var result = await ws.ReceiveAsync(buffer, token);
                     var clientId = Encoding.UTF8.GetString(buffer, 0, result.Count);
 
-                    if (_getAllowedIds().Contains(clientId))
+                    HashSet<string> allowedIds;
+                    lock (_allowedIdsLock)
+                    {
+                        allowedIds = _allowedIdsCache;
+                    }
+
+                    if (allowedIds.Contains(clientId))
                     {
                         _wsclients.TryAdd(clientId, ws);
                         _ = Task.Run(() => Listen(ws, clientId, token));
@@ -133,12 +168,28 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Common.Network.Server
             }
         }
 
+        /// <summary>
+        /// Call this method whenever the allowed IDs change (e.g., after registration/deregistration).
+        /// </summary>
+        public void UpdateAllowedIds()
+        {
+            lock (_allowedIdsLock)
+            {
+                _allowedIdsCache = new HashSet<string>(HttpServer.GetRecordingClientIds());
+            }
+        }
+
         public async Task BroadcastVoicePacket(byte[] data, SRClientBase client, CancellationToken token)
         {
             if (!_enabled || !IsRunning)
                 return;
 
-            var allowedIds = new HashSet<string>(_getAllowedIds());
+            HashSet<string> allowedIds;
+            lock (_allowedIdsLock)
+            {
+                allowedIds = _allowedIdsCache;
+            }
+
             foreach (var recording_client in _wsclients)
             {
                 if (allowedIds.Contains(recording_client.Key) && recording_client.Value.State == WebSocketState.Open)
