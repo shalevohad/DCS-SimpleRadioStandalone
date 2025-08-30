@@ -268,10 +268,17 @@ internal class UDPVoiceRouter : IHandle<ServerFrequenciesChanged>, IHandle<Serve
                                         if (mainFrequency > 0)
                                         {
                                             #region Push to WebSocket clients
-                                            if (client.AllowRecord)
+                                            try
                                             {
-                                                var packetCopy = udpVoicePacket;
-                                                _ = _wsVoiceServer.BroadcastVoicePacket(udpPacket.RawBytes, CancellationToken.None);
+                                                if (client.AllowRecord && _wsVoiceServer != null && _wsVoiceServer.IsRunning)
+                                                {
+                                                    var packetRawBytesCopy = udpPacket.RawBytes;
+                                                    _ = _wsVoiceServer.BroadcastVoicePacket(packetRawBytesCopy, CancellationToken.None);
+                                                }
+                                            }
+                                            catch (Exception)
+                                            {
+                                                //dont log, slows down too much...
                                             }
                                             #endregion
 

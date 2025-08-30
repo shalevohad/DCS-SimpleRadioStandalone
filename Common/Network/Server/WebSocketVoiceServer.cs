@@ -22,6 +22,7 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Common.Network.Server
         private readonly bool _enabled;
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private readonly Func<IEnumerable<string>> _getAllowedIds;
+        public bool IsRunning => _listener != null && _listener.IsListening;
 
         public WebSocketVoiceServer(Func<IEnumerable<string>> getAllowedIds)
         {
