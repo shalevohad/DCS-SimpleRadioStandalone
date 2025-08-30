@@ -10,6 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
 using System.Linq;
+using Ciribob.DCS.SimpleRadio.Standalone.Common.Models;
+using Ciribob.DCS.SimpleRadio.Standalone.Common.Models.Player;
 
 namespace Ciribob.DCS.SimpleRadio.Standalone.Common.Network.Server
 {
@@ -131,8 +133,11 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Common.Network.Server
             }
         }
 
-        public async Task BroadcastVoicePacket(byte[] data, CancellationToken token)
+        public async Task BroadcastVoicePacket(byte[] data, SRClientBase client, CancellationToken token)
         {
+            if (!_enabled || !IsRunning)
+                return;
+
             var allowedIds = new HashSet<string>(_getAllowedIds());
             foreach (var recording_client in _wsclients)
             {

@@ -28,7 +28,7 @@ public class HttpServer
     private static readonly string CLIENT_KICK_GUID = "/client/kick/guid";
     private static readonly string CLIENT_KICK_NAME = "/client/kick/name";
     private static readonly string CLIENTS_LIST = "/clients";
-    private static readonly string CLIENT_REGISTER_VOICE = "/client/register/voice";
+    private static readonly string REGISTER_VOICE_STRAM = "/register/voice/stream/";
 
     private static readonly ConcurrentDictionary<string, DateTime> _recordingClients = new();
 
@@ -186,8 +186,26 @@ public class HttpServer
 
                 context.Response.StatusCode = 404;
             }
-            else if (context.Request.Url.AbsolutePath == CLIENT_REGISTER_VOICE)
+            else if (context.Request.Url.AbsolutePath == REGISTER_VOICE_STRAM)
             {
+                #region Enforce max connections and refuse if exceeded (responde with 429 status code)
+                int maxConnections = ServerSettingsStore.Instance
+                    .GetServerSetting(ServerSettingsKeys.WEBSOCKET_SERVER_MAX_CONNECTIONS).IntValue;
+
+                //dont allow more than maxConnections, send json error response with 429 status code
+                if (_recordingClients.Count >= maxConnections)
+                {
+                    context.Response.StatusCode = 429; // Too Many Requests
+                    var responseJson = "{\"error\":\"Maximum number of recording clients reached.\"}";
+                    var buffer = Encoding.UTF8.GetBytes(responseJson);
+                    context.Response.ContentType = "application/json";
+                    context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                    context.Response.OutputStream.Flush();
+                    Logger.Warn("Recording client registration refused: max connections reached.");
+                    return;
+                }
+                #endregion
+
                 // Generate a unique ID for the recording client
                 var id = Guid.NewGuid().ToString();
                 _recordingClients[id] = DateTime.UtcNow;
@@ -195,9 +213,9 @@ public class HttpServer
                 // Respond with the generated ID as JSON
                 context.Response.StatusCode = 200;
                 context.Response.ContentType = "application/json";
-                var responseJson = $"{{\"id\":\"{id}\"}}";
-                var buffer = Encoding.UTF8.GetBytes(responseJson);
-                context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                var response = $"{{\"id\":\"{id}\"}}";
+                var responseBuffer = Encoding.UTF8.GetBytes(response);
+                context.Response.OutputStream.Write(responseBuffer, 0, responseBuffer.Length);
                 context.Response.OutputStream.Flush();
 
                 Logger.Info($"Recording client '{id}' registered for voice stream.");

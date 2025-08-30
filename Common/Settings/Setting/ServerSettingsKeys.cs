@@ -40,6 +40,7 @@ public enum ServerSettingsKeys
     HTTP_SERVER_PORT = 33,
     WEBSOCKET_SERVER_ENABLED = 34,
     WEBSOCKET_SERVER_PORT = 35,
+    WEBSOCKET_SERVER_MAX_CONNECTIONS = 36,
 }
 
 public class DefaultServerSettings
@@ -81,5 +82,6 @@ public class DefaultServerSettings
         { ServerSettingsKeys.HTTP_SERVER_PORT.ToString(), "8080" },
         { ServerSettingsKeys.WEBSOCKET_SERVER_ENABLED.ToString(), "false" },
         { ServerSettingsKeys.WEBSOCKET_SERVER_PORT.ToString(), "8081" },
+        { ServerSettingsKeys.WEBSOCKET_SERVER_MAX_CONNECTIONS.ToString(), "10" },
     };
 }

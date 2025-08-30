@@ -267,22 +267,6 @@ internal class UDPVoiceRouter : IHandle<ServerFrequenciesChanged>, IHandle<Serve
                                         // Only trigger transmitting frequency update for "proper" packets (excluding invalid frequencies and magic ping packets with modulation 4)
                                         if (mainFrequency > 0)
                                         {
-                                            #region Push to WebSocket clients
-                                            try
-                                            {
-                                                if (client.AllowRecord && _wsVoiceServer != null && _wsVoiceServer.IsRunning)
-                                                {
-                                                    var packetRawBytesCopy = udpPacket.RawBytes;
-                                                    _ = _wsVoiceServer.BroadcastVoicePacket(packetRawBytesCopy, CancellationToken.None);
-                                                }
-                                            }
-                                            catch (Exception)
-                                            {
-                                                //dont log, slows down too much...
-                                            }
-                                            #endregion
-
-
                                             var mainModulation = (Modulation)udpVoicePacket.Modulations[0];
                                             if (mainModulation == Modulation.INTERCOM)
                                                 client.TransmittingFrequency = "INTERCOM";
@@ -295,6 +279,21 @@ internal class UDPVoiceRouter : IHandle<ServerFrequenciesChanged>, IHandle<Serve
                                             // only log received transmissions!
                                             if (udpVoicePacket.RetransmissionCount == 0)
                                                 _transmissionLoggingQueue?.LogTransmission(client);
+
+                                            #region Push to WebSocket clients
+                                            try
+                                            {
+                                                if (client.AllowRecord && _wsVoiceServer != null && _wsVoiceServer.IsRunning)
+                                                {
+                                                    var packetRawBytesCopy = udpPacket.RawBytes;
+                                                    _ = _wsVoiceServer.BroadcastVoicePacket(packetRawBytesCopy, client, CancellationToken.None);
+                                                }
+                                            }
+                                            catch (Exception)
+                                            {
+                                                //dont log, slows down too much...
+                                            }
+                                            #endregion
                                         }
                                     }
                                 }

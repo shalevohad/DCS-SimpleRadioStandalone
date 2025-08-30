@@ -40,8 +40,7 @@ public class ServerState : IHandle<StartServerMessage>, IHandle<StopServerMessag
     private HttpServer _httpServer;
 
     #region WebsocketVoiceServer properties
-    private WebSocketVoiceServer _wsVoiceServer = null;
-    private CancellationTokenSource _wsCts;
+    private WebSocketVoiceServer _wsVoiceServer;
     #endregion
 
     public ServerState(IEventAggregator eventAggregator)
@@ -134,7 +133,7 @@ public class ServerState : IHandle<StartServerMessage>, IHandle<StopServerMessag
     private void StartWebSocketVoiceServer()
     {
         _wsVoiceServer = new WebSocketVoiceServer(() => HttpServer.GetRecordingClientIds());
-        Task.Run(() => _wsVoiceServer.Start());
+        Task.Run(() => _wsVoiceServer.Start()); // Run the WebSocket server in a separate task to avoid blocking
     }
 
     public void StopServer()
