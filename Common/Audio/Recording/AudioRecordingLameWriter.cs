@@ -102,8 +102,9 @@ internal class AudioRecordingLameWriter
         for (var i = 0; i < _streams.Count; i++)
         {
             var tag = _streams[i].Tag;
-            if (tag == null || tag.Length == 0)
-                _mp3FilePaths.Add(filePathBase + tag + ".mp3");
+            if (tag == null || tag.Length == 0) tag = "";
+
+            _mp3FilePaths.Add(filePathBase + tag + ".mp3");
 
             _mp3FileWriters.Add(new LameMP3FileWriter(_mp3FilePaths[i], _waveFormat, lamePreset));
         }
