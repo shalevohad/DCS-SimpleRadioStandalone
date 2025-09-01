@@ -55,7 +55,7 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
             var result = MessageBox.Show(
                 Application.Current.MainWindow,
                 $"Current assigned directory:\n{currentPath ?? "(default - not set)"}\n\nDo you want to choose a different directory?",
-                Resources.MsgBoxSetSRSPath,
+                Resources.MsgBoxSetSRSRecordingPath,
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Information);
 
@@ -69,7 +69,7 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
 
                     MessageBox.Show(Application.Current.MainWindow,
                         $"Recording path set to:\n{dialog.SelectedPath}",
-                        Resources.MsgBoxSetSRSPath,
+                        Resources.MsgBoxSetSRSRecordingPath,
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
                 }

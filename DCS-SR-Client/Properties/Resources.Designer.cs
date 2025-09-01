@@ -234,6 +234,15 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Browse.
+        /// </summary>
+        public static string Browse {
+            get {
+                return ResourceManager.GetString("Browse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Close.
         /// </summary>
         public static string BtnClose {
@@ -383,6 +392,15 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         public static string CurrentProfileNone {
             get {
                 return ResourceManager.GetString("CurrentProfileNone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current recording path:.
+        /// </summary>
+        public static string currentSetRecordingDirectory {
+            get {
+                return ResourceManager.GetString("currentSetRecordingDirectory", resourceCulture);
             }
         }
         
@@ -1787,6 +1805,15 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SRS Recordings Path.
+        /// </summary>
+        public static string MsgBoxSetSRSRecordingPath {
+            get {
+                return ResourceManager.GetString("MsgBoxSetSRSRecordingPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Recording Path set to:.
         /// </summary>
         public static string MsgBoxSetSRSRecordingPathText {
@@ -2543,6 +2570,15 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         public static string ResetRadioOverlay {
             get {
                 return ResourceManager.GetString("ResetRadioOverlay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select Recording Directory.
+        /// </summary>
+        public static string SelectRecordingDirectory {
+            get {
+                return ResourceManager.GetString("SelectRecordingDirectory", resourceCulture);
             }
         }
         

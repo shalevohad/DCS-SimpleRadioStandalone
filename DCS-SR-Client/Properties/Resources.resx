@@ -1240,4 +1240,16 @@ Requires Tx or Rx Effects On</value>
   <data name="MsgBoxSetSRSRecordingPathText" xml:space="preserve">
     <value>Recording Path set to:</value>
   </data>
+  <data name="SelectRecordingDirectory" xml:space="preserve">
+    <value>Select Recording Directory</value>
+  </data>
+  <data name="Browse" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="currentSetRecordingDirectory" xml:space="preserve">
+    <value>Current recording path:</value>
+  </data>
+  <data name="MsgBoxSetSRSRecordingPath" xml:space="preserve">
+    <value>SRS Recordings Path</value>
+  </data>
 </root>
