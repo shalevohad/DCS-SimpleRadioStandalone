@@ -430,6 +430,18 @@
                                 Grid.Row="4"
                                 Grid.Column="1"
                                 ToggleValue="{Binding DisallowedAudioTone, Mode=TwoWay}" />
+
+                            <Label Grid.Row="5"
+                                   Grid.Column="0"
+                                   HorizontalContentAlignment="Center"
+                                   VerticalContentAlignment="Center"
+                                   Content="{x:Static p:Resources.SetSRSRecordingPath}" />
+
+                            <Button Grid.Row="5"
+                                    Grid.Column="1"
+                                    Command="{Binding SetSRSRecordingPathCommand}"
+                                    Content="{x:Static p:Resources.SetSRSRecordingPathBtn}" />
+
                         </Grid>
                     </GroupBox>
                     <GroupBox Header="{x:Static p:Resources.MiscellanousHeader}">

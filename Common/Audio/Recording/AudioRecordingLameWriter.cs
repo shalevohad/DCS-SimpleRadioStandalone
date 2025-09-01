@@ -22,6 +22,8 @@ internal class AudioRecordingLameWriter
     private readonly List<AudioRecordingStream> _streams;
     private readonly WaveFormat _waveFormat;
 
+    private readonly string _recordingDirectory;
+
     // construct an audio file writer that uses LAME to encode the streams in an .mp3 file using
     // the specified sample rate. the streams list provides the audio streams that supply the
     // audio data, each stream is written to its own file (named per the current date and time
@@ -39,11 +41,23 @@ internal class AudioRecordingLameWriter
         _floatBuf = new float[maxSamples];
         _byteBuf = new byte[maxSamples * sizeof(float)];
 
-        if (!Directory.Exists("Recordings"))
+        // ensure the recording directory exists
+        _recordingDirectory = getRecordingDirectory();
+    }
+
+    private string getRecordingDirectory()
+    {
+        string dir = GlobalSettingsStore.Instance.GetClientSetting(GlobalSettingsKeys.RecordingPath).StringValue;
+        if (dir == null || dir == "" || dir.Length == 0)
+            dir = "Recordings"; //default recording directory
+
+        if (!Directory.Exists(dir))
         {
-            _logger.Info("Recordings directory missing, creating directory");
-            Directory.CreateDirectory("Recordings");
+            _logger.Info($"Recording directory '{dir}' missing, creating directory");
+            Directory.CreateDirectory(dir);
         }
+
+        return dir;
     }
 
     // attempt to write up to the max samples from each stream to their output files. this will
@@ -71,10 +85,10 @@ internal class AudioRecordingLameWriter
 
     public void Start()
     {
-        // streams are stored in Recordings directory, named "<date>-<time><tag>.mp3"
-        var sanitisedDate = string.Join("-", DateTime.Now.ToShortDateString().Split(Path.GetInvalidFileNameChars()));
-        var sanitisedTime = string.Join("-", DateTime.Now.ToLongTimeString().Split(Path.GetInvalidFileNameChars()));
-        var filePathBase = $"Recordings\\{sanitisedDate}-{sanitisedTime}";
+        // streams are stored in GlobalSettingsKeys.RecordingPath directory, named "<tag> <date-time>.mp3" to match the tacview sync.
+        // Optional is autoload convention - if the tag will be callsign and with numbering identification)
+        var sanitisedDateTime = DateTime.UtcNow.ToString("yyyyMMdd'T'HHmmss'Z'"); //need to change it for DCS time in order to autosync?
+        var filePathBase = _recordingDirectory + @"\";
 
         var lamePreset = (LAMEPreset)Enum.Parse(typeof(LAMEPreset),
             GlobalSettingsStore.Instance.GetClientSetting(GlobalSettingsKeys.RecordingQuality).RawValue);
@@ -82,8 +96,11 @@ internal class AudioRecordingLameWriter
         for (var i = 0; i < _streams.Count; i++)
         {
             var tag = _streams[i].Tag;
-            if (tag == null || tag.Length == 0) tag = "";
-            _mp3FilePaths.Add(filePathBase + tag + ".mp3");
+            if (tag == null || tag.Length == 0)
+                _mp3FilePaths.Add(filePathBase + sanitisedDateTime + ".mp3");
+            else
+                _mp3FilePaths.Add(filePathBase + tag + " " + sanitisedDateTime + ".mp3");
+
             _mp3FileWriters.Add(new LameMP3FileWriter(_mp3FilePaths[i], _waveFormat, lamePreset));
         }
     }

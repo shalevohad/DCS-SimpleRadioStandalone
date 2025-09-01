@@ -45,6 +45,37 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
         });
+
+        SetSRSRecordingPathCommand = new DelegateCommand(() =>
+        {
+            // Get current assigned recording directory from config
+            var currentPath = _globalSettings.GetClientSetting(GlobalSettingsKeys.RecordingPath)?.StringValue;
+
+            // Show current path in MessageBox
+            var result = MessageBox.Show(
+                Application.Current.MainWindow,
+                $"Current assigned directory:\n{currentPath ?? "(default - not set)"}\n\nDo you want to choose a different directory?",
+                Resources.MsgBoxSetSRSPath,
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Information);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                var dialog = new BrowseFolderDialog(currentPath);
+                dialog.Owner = Application.Current.MainWindow;
+                if (dialog.ShowDialog() == true)
+                {
+                    _globalSettings.SetClientSetting(GlobalSettingsKeys.RecordingPath, dialog.SelectedPath);
+
+                    MessageBox.Show(Application.Current.MainWindow,
+                        $"Recording path set to:\n{dialog.SelectedPath}",
+                        Resources.MsgBoxSetSRSPath,
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+            }
+        });
+
         ResetOverlayCommand = new DelegateCommand(() =>
         {
             EventBus.Instance.PublishOnUIThreadAsync(new CloseRadioOverlayMessage());
@@ -154,6 +185,8 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
     }
 
     public ICommand SetSRSPathCommand { get; set; }
+
+    public ICommand SetSRSRecordingPathCommand { get; set; }
 
     public ICommand ResetOverlayCommand { get; set; }
 
