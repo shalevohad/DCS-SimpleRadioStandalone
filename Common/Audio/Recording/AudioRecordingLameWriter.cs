@@ -42,10 +42,10 @@ internal class AudioRecordingLameWriter
         _byteBuf = new byte[maxSamples * sizeof(float)];
 
         // ensure the recording directory exists
-        _recordingDirectory = getRecordingDirectory();
+        _recordingDirectory = GetRecordingDirectory();
     }
 
-    private string getRecordingDirectory()
+    private string GetRecordingDirectory()
     {
         string dir = GlobalSettingsStore.Instance.GetClientSetting(GlobalSettingsKeys.RecordingPath).StringValue;
         if (dir == null || dir == "" || dir.Length == 0)
@@ -87,8 +87,14 @@ internal class AudioRecordingLameWriter
     {
         // streams are stored in GlobalSettingsKeys.RecordingPath directory, named "<tag> <date-time>.mp3" to match the tacview sync.
         // Optional is autoload convention - if the tag will be callsign and with numbering identification)
-        var sanitisedDateTime = DateTime.UtcNow.ToString("yyyyMMdd'T'HHmmss'Z'"); //need to change it for DCS time in order to autosync?
-        var filePathBase = _recordingDirectory + @"\";
+        //var sanitisedDateTime = DateTime.UtcNow.ToString("yyyyMMdd'T'HHmmss'Z'"); //need to change it for DCS time in order to autosync?
+        //var filePathBase = _recordingDirectory + @"\";
+
+        var sanitisedDate = string.Join("-", DateTime.Now.ToShortDateString().Split(Path.GetInvalidFileNameChars()));
+        var sanitisedTime = string.Join("-", DateTime.Now.ToLongTimeString().Split(Path.GetInvalidFileNameChars()));
+
+        var filePathBase = $"{_recordingDirectory}\\{sanitisedDate}-{sanitisedTime}";
+        
 
         var lamePreset = (LAMEPreset)Enum.Parse(typeof(LAMEPreset),
             GlobalSettingsStore.Instance.GetClientSetting(GlobalSettingsKeys.RecordingQuality).RawValue);
@@ -97,9 +103,7 @@ internal class AudioRecordingLameWriter
         {
             var tag = _streams[i].Tag;
             if (tag == null || tag.Length == 0)
-                _mp3FilePaths.Add(filePathBase + sanitisedDateTime + ".mp3");
-            else
-                _mp3FilePaths.Add(filePathBase + tag + " " + sanitisedDateTime + ".mp3");
+                _mp3FilePaths.Add(filePathBase + tag + ".mp3");
 
             _mp3FileWriters.Add(new LameMP3FileWriter(_mp3FilePaths[i], _waveFormat, lamePreset));
         }
