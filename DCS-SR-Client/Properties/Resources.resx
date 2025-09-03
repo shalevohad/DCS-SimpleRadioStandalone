@@ -1232,16 +1232,16 @@ Requires Tx or Rx Effects On</value>
     <value>Channel Presets Configuration</value>
   </data>
   <data name="SetSRSRecordingPath" xml:space="preserve">
-    <value>Set Path for recording files</value>
+    <value>Select Recordings Directory</value>
   </data>
   <data name="SetSRSRecordingPathBtn" xml:space="preserve">
     <value>Set Path</value>
   </data>
   <data name="MsgBoxSetSRSRecordingPathText" xml:space="preserve">
-    <value>Recording Path set to:</value>
+    <value>Recording Path set to</value>
   </data>
   <data name="SelectRecordingDirectory" xml:space="preserve">
-    <value>Select Recording Directory</value>
+    <value>Please select a directory for recordings</value>
   </data>
   <data name="Browse" xml:space="preserve">
     <value>Browse</value>
@@ -1251,5 +1251,14 @@ Requires Tx or Rx Effects On</value>
   </data>
   <data name="MsgBoxSetSRSRecordingPath" xml:space="preserve">
     <value>SRS Recordings Path</value>
+  </data>
+  <data name="SRSDirectoryNotFound" xml:space="preserve">
+    <value>Directory Not Found</value>
+  </data>
+  <data name="SRSDirectoryNotExist" xml:space="preserve">
+    <value>The directory you entered does not exist</value>
+  </data>
+  <data name="SRSRecordingPath" xml:space="preserve">
+    <value>Recording Path</value>
   </data>
 </root>

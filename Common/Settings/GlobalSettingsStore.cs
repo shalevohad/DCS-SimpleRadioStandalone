@@ -335,7 +335,7 @@ public class GlobalSettingsStore
         { GlobalSettingsKeys.AllowXInputController.ToString(), "false" },
         { GlobalSettingsKeys.LastPresetsFolder.ToString(), string.Empty },
 
-        { GlobalSettingsKeys.RecordingPath.ToString(), "" }
+        { GlobalSettingsKeys.RecordingPath.ToString(), "Recordings" }
     };
 
     private readonly Logger Logger = LogManager.GetCurrentClassLogger();

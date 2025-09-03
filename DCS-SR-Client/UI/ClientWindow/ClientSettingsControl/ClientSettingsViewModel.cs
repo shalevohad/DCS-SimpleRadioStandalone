@@ -48,31 +48,36 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
 
         SetSRSRecordingPathCommand = new DelegateCommand(() =>
         {
-            // Get current assigned recording directory from config
             var currentPath = _globalSettings.GetClientSetting(GlobalSettingsKeys.RecordingPath)?.StringValue;
 
-            // Show current path in MessageBox
-            var result = MessageBox.Show(
-                Application.Current.MainWindow,
-                $"Current assigned directory:\n{currentPath ?? "(default - not set)"}\n\nDo you want to choose a different directory?",
-                Resources.MsgBoxSetSRSRecordingPath,
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Information);
+            // Create the dialog with custom texts if desired
+            var dialog = new BrowseFolderDialog(
+                initialPath: currentPath,
+                dialogTitle: Resources.SetSRSRecordingPath,
+                promptText: Resources.SelectRecordingDirectory + ":",
+                browseButtonText: Resources.Browse + "...",
+                okButtonText: Resources.SetSRSRecordingPathBtn,
+                cancelButtonText: Resources.BtnClose
+            );
 
-            if (result == MessageBoxResult.Yes)
+            // Optionally customize the directory not exist messages
+            dialog.DirectoryNotExistMessages = new List<string>
             {
-                var dialog = new BrowseFolderDialog(currentPath);
-                dialog.Owner = Application.Current.MainWindow;
-                if (dialog.ShowDialog() == true)
-                {
-                    _globalSettings.SetClientSetting(GlobalSettingsKeys.RecordingPath, dialog.SelectedPath);
+                Resources.SRSDirectoryNotExist+".",
+                Resources.SRSDirectoryNotFound
+            };
 
-                    MessageBox.Show(Application.Current.MainWindow,
-                        $"Recording path set to:\n{dialog.SelectedPath}",
-                        Resources.MsgBoxSetSRSRecordingPath,
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
+            dialog.Owner = Application.Current.MainWindow;
+
+            if (dialog.ShowDialog() == true)
+            {
+                CurrentRecordingPath = dialog.SelectedPath;
+
+                MessageBox.Show(Application.Current.MainWindow,
+                    $"{Resources.MsgBoxSetSRSRecordingPathText}:\n{CurrentRecordingPath}",
+                    Resources.SRSRecordingPath,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
         });
 
@@ -1223,5 +1228,15 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
         //TODO send message to tell input to reload!
         //TODO pick up in inputhandler that settings have changed?
         EventBus.Instance.PublishOnUIThreadAsync(new ProfileChangedMessage());
+    }
+
+    public string CurrentRecordingPath
+    {
+        get => _globalSettings.GetClientSetting(GlobalSettingsKeys.RecordingPath)?.StringValue ?? "";
+        set
+        {
+            _globalSettings.SetClientSetting(GlobalSettingsKeys.RecordingPath, value);
+            NotifyPropertyChanged();
+        }
     }
 }
