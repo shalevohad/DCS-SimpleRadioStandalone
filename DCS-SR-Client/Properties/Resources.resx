@@ -1245,6 +1245,7 @@ Requires Tx or Rx Effects On</value>
   </data>
   <data name="SRSRecordingPath" xml:space="preserve">
     <value>Recording Path</value>
+  </data>
   <data name="NoiseGainDB" xml:space="preserve">
     <value>Noise Gain (dB)</value>
   </data>
