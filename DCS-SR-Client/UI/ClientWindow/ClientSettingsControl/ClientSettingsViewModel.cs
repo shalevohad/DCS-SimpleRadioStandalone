@@ -61,11 +61,10 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
             );
 
             // Optionally customize the directory not exist messages
-            dialog.DirectoryNotExistMessages = new List<string>
-            {
-                Resources.SRSDirectoryNotExist+".",
+            dialog.BrowseDialogErrorMessages = new BrowseFolderDialog.BrowseErrorMessages(
+                Resources.SRSDirectoryNotExist,
                 Resources.SRSDirectoryNotFound
-            };
+            );
 
             dialog.Owner = Application.Current.MainWindow;
 

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Forms;
+using NLog; // Add this
 
 namespace Ciribob.DCS.SimpleRadio.Standalone.Client.UI.ClientWindow.ClientSettingsControl
 {
@@ -8,16 +9,32 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.UI.ClientWindow.ClientSettin
     {
         public string SelectedPath { get; private set; }
 
+        // Add a static logger
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
         // Generic properties for reuse
         public string DialogTitle { get; set; } = "Select Directory";
         public string PromptText { get; set; } = "Select a directory:";
         public string BrowseButtonText { get; set; } = "Browse...";
         public string OkButtonText { get; set; } = "OK";
         public string CancelButtonText { get; set; } = "Cancel";
-        public List<string> DirectoryNotExistMessages { get; set; } = new()
+        public BrowseErrorMessages BrowseDialogErrorMessages { get; set; } = new BrowseErrorMessages();
+
+        // Error messages for directory operations
+        public class BrowseErrorMessages
         {
-            "The selected directory does not exist.",
-            "Directory not found."
+            public string not_exist { get; } = "The selected directory does not exist";
+            public string not_found { get; } = "Directory Not Found";
+
+            // Constructor to allow custom messages
+            public BrowseErrorMessages(string xi_not_exist = null, string xi_not_found = null)
+            {
+                if (!string.IsNullOrEmpty(xi_not_exist))
+                    not_exist = xi_not_exist;
+
+                if (!string.IsNullOrEmpty(xi_not_found))
+                    not_found = xi_not_found;
+            }
         };
 
         public BrowseFolderDialog(
@@ -58,15 +75,18 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.UI.ClientWindow.ClientSettin
             var path = PathTextBox.Text;
             if (!System.IO.Directory.Exists(path))
             {
+                Logger.Info($"Directory not exist: {path}");
                 try
                 {
                     System.IO.Directory.CreateDirectory(path); //create if not exist
+                    Logger.Info($"Directory created successfuly!");
                 }
                 catch (System.Exception ex)
                 {
+                    Logger.Error(ex, $"Failed to create the directory!");
                     System.Windows.MessageBox.Show(this,
-                        DirectoryNotExistMessages[0] + "\n" + ex.Message,
-                        DirectoryNotExistMessages[1],
+                        BrowseDialogErrorMessages.not_exist + "\n" + ex.Message,
+                        BrowseDialogErrorMessages.not_found,
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
                     return;
