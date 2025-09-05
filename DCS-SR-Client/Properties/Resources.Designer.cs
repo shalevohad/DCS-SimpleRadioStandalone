@@ -684,15 +684,6 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FM Effect Volume.
-        /// </summary>
-        public static string FMEffectVolume {
-            get {
-                return ResourceManager.GetString("FMEffectVolume", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Game.
         /// </summary>
         public static string GameConnectionStatusLabel {
@@ -1029,11 +1020,11 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to HF Effect Volume.
+        ///   Looks up a localized string similar to HF Noise Gain (dB).
         /// </summary>
-        public static string HFEffectVolume {
+        public static string HFNoiseGainDB {
             get {
-                return ResourceManager.GetString("HFEffectVolume", resourceCulture);
+                return ResourceManager.GetString("HFNoiseGainDB", resourceCulture);
             }
         }
         
@@ -1852,6 +1843,15 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Noise Gain (dB).
+        /// </summary>
+        public static string NoiseGainDB {
+            get {
+                return ResourceManager.GetString("NoiseGainDB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Available in Cockpit.
         /// </summary>
         public static string OverlayAvailableCockpit {
@@ -2082,6 +2082,15 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         public static string OverlayTransponder {
             get {
                 return ResourceManager.GetString("OverlayTransponder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable Per Radio Model Effects.
+        /// </summary>
+        public static string PerRadioModelEffects {
+            get {
+                return ResourceManager.GetString("PerRadioModelEffects", resourceCulture);
             }
         }
         
@@ -2475,6 +2484,15 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Recording Format (requires restart).
+        /// </summary>
+        public static string RecordingFormat {
+            get {
+                return ResourceManager.GetString("RecordingFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Recording.
         /// </summary>
         public static string RecordingHeader {
@@ -2484,7 +2502,7 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Recording Quality.
+        ///   Looks up a localized string similar to Recording Quality (mp3 only).
         /// </summary>
         public static string RecordingQuality {
             get {
@@ -3208,15 +3226,6 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to UHF Effect Volume.
-        /// </summary>
-        public static string UHFEffectVolume {
-            get {
-                return ResourceManager.GetString("UHFEffectVolume", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Allow VAICOM TX Inhibit.
         /// </summary>
         public static string VAICOMTXInhibitEnabled {
@@ -3294,15 +3303,6 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         public static string ValueUnknown {
             get {
                 return ResourceManager.GetString("ValueUnknown", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to VHF Effect Volume.
-        /// </summary>
-        public static string VHFEffectVolume {
-            get {
-                return ResourceManager.GetString("VHFEffectVolume", resourceCulture);
             }
         }
         

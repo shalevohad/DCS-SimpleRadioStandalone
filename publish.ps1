@@ -134,6 +134,11 @@ dotnet publish "./Installer\Installer.csproj" `
     --self-contained false `
     @commonParams
 
+# VC Redist
+Write-Host "Downloading VC redistributables..." -ForegroundColor Green
+Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile "$outputPath\VC_redist.x64.exe"
+
+
 ##Prep Directory
 Write-Host "Clean up and prepare Installer and AutoUpdater .exe's in the root" -ForegroundColor Green
 Copy-Item "$outputPath\Installer\Installer.exe" -Destination "./$outputPath"
