@@ -31,10 +31,68 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
     private readonly GlobalSettingsStore _globalSettings = GlobalSettingsStore.Instance;
     private readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    public string CurrentRecordingPath
+    {
+        get
+        {
+            var configValue = _globalSettings.GetClientSetting(GlobalSettingsKeys.RecordingPath).StringValue;
+            if (string.IsNullOrWhiteSpace(configValue))
+                configValue = "Recordings";
+
+            // If the config value is an absolute path under the exe dir, return the relative part
+            string exeDir = AppDomain.CurrentDomain.BaseDirectory;
+            if (System.IO.Path.IsPathRooted(configValue) && configValue.StartsWith(exeDir, StringComparison.OrdinalIgnoreCase))
+            {
+                string rel = configValue.Substring(exeDir.Length).TrimStart(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+                return string.IsNullOrEmpty(rel) ? "." : rel;
+            }
+
+            return configValue;
+        }
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                value = "Recordings"; // if user clears the path, reset to default
+
+            string finalPath = value;
+
+            // If not an absolute path, combine with executable directory
+            if (!System.IO.Path.IsPathRooted(finalPath))
+            {
+                string exeDir = AppDomain.CurrentDomain.BaseDirectory;
+                finalPath = System.IO.Path.Combine(exeDir, finalPath);
+            }
+
+            if (!Directory.Exists(finalPath))
+            {
+                Logger.Info($"Directory for recordings does not exist: {finalPath}");
+                try
+                {
+                    Directory.CreateDirectory(finalPath);
+                    Logger.Info("Created directory!");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, $"Failed to create the directory: '{ex.Message}'");
+                    MessageBox.Show(
+                        Application.Current.MainWindow,
+                        $"{Resources.SRSDirectoryNotExist}:\n{finalPath}\n\n{ex.Message}",
+                        Resources.SRSDirectoryNotExist,
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                    return; // Do not save to config if directory creation failed
+                }
+            }
+
+            // Save the original value (relative or absolute) to config
+            _globalSettings.SetClientSetting(GlobalSettingsKeys.RecordingPath, value);
+            NotifyPropertyChanged();
+        }
+    }
 
     public ClientSettingsViewModel()
     {
-        SetSRSPathCommand = new DelegateCommand(() =>
+    SetSRSPathCommand = new DelegateCommand(() =>
         {
             DirectoryInfo di = new DirectoryInfo(Directory.GetCurrentDirectory());
             Registry.SetValue("HKEY_CURRENT_USER\\SOFTWARE\\DCS-SR-Standalone", "SRPathStandalone",
@@ -45,40 +103,6 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
                 Resources.MsgBoxSetSRSPath,
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
-        });
-
-        SetSRSRecordingPathCommand = new DelegateCommand(() =>
-        {
-            var currentPath = _globalSettings.GetClientSetting(GlobalSettingsKeys.RecordingPath)?.StringValue;
-
-            // Create the dialog with custom texts if desired
-            var dialog = new BrowseFolderDialog(
-                initialPath: currentPath,
-                dialogTitle: Resources.SetSRSRecordingPath,
-                promptText: Resources.SelectRecordingDirectory + ":",
-                browseButtonText: Resources.Browse + "...",
-                okButtonText: Resources.SetSRSRecordingPathBtn,
-                cancelButtonText: Resources.BtnClose
-            );
-
-            // Optionally customize the directory not exist messages
-            dialog.BrowseDialogErrorMessages = new BrowseFolderDialog.BrowseErrorMessages(
-                Resources.SRSDirectoryNotExist,
-                Resources.SRSDirectoryNotFound
-            );
-
-            dialog.Owner = Application.Current.MainWindow;
-
-            if (dialog.ShowDialog() == true)
-            {
-                CurrentRecordingPath = dialog.SelectedPath;
-
-                MessageBox.Show(Application.Current.MainWindow,
-                    $"{Resources.MsgBoxSetSRSRecordingPathText}:\n{CurrentRecordingPath}",
-                    Resources.SRSRecordingPath,
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-            }
         });
 
         ResetOverlayCommand = new DelegateCommand(() =>
@@ -190,8 +214,6 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
     }
 
     public ICommand SetSRSPathCommand { get; set; }
-
-    public ICommand SetSRSRecordingPathCommand { get; set; }
 
     public ICommand ResetOverlayCommand { get; set; }
 
@@ -1132,6 +1154,7 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
         NotifyPropertyChanged(nameof(RecordTransmissions));
         NotifyPropertyChanged(nameof(SingleFileMixdown));
         NotifyPropertyChanged(nameof(RecordingQuality));
+        NotifyPropertyChanged(nameof(CurrentRecordingPath));
 
         NotifyPropertyChanged(nameof(AutoSelectInputProfile));
         NotifyPropertyChanged(nameof(CheckForBetaUpdates));
@@ -1192,15 +1215,5 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
         //TODO send message to tell input to reload!
         //TODO pick up in inputhandler that settings have changed?
         EventBus.Instance.PublishOnUIThreadAsync(new ProfileChangedMessage());
-    }
-
-    public string CurrentRecordingPath
-    {
-        get => _globalSettings.GetClientSetting(GlobalSettingsKeys.RecordingPath)?.StringValue ?? "";
-        set
-        {
-            _globalSettings.SetClientSetting(GlobalSettingsKeys.RecordingPath, value);
-            NotifyPropertyChanged();
-        }
     }
 }

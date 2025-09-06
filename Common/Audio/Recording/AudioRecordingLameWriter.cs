@@ -35,8 +35,15 @@ internal class AudioRecordingLameWriter : AudioRecordingWriterBase
     private string GetRecordingDirectory()
     {
         string dir = GlobalSettingsStore.Instance.GetClientSetting(GlobalSettingsKeys.RecordingPath).StringValue;
-        if (dir == null || dir == "" || dir.Length == 0)
-            dir = "Recordings"; //default recording directory
+        if (string.IsNullOrEmpty(dir))
+            dir = "Recordings"; // default recording directory
+
+        // If not an absolute path, combine with executable directory
+        if (!Path.IsPathRooted(dir))
+        {
+            string exeDir = AppDomain.CurrentDomain.BaseDirectory;
+            dir = Path.Combine(exeDir, dir);
+        }
 
         if (!Directory.Exists(dir))
         {
