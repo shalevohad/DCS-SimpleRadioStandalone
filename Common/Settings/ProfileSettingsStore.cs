@@ -70,7 +70,8 @@ public enum ProfileSettingsKeys
     AmbientCockpitNoiseEffectVolume,
     AmbientCockpitIntercomNoiseEffect,
     DisableExpansionRadios,
-    ServerPresetSelection
+    ServerPresetSelection,
+    AllowServerEAMRadioPreset, //sets if the awacs custom radio config can be used
 }
 
 public enum ServerPresetConfiguration
@@ -147,7 +148,9 @@ public class ProfileSettingsStore
         {
             ProfileSettingsKeys.ServerPresetSelection.ToString(),
             nameof(ServerPresetConfiguration.USE_CLIENT_AND_SERVER_IF_SET)
-        }
+        },
+        { ProfileSettingsKeys.AllowServerEAMRadioPreset.ToString(), "true" },
+    
     };
 
     public static readonly List<string> ServerPresetSettings;

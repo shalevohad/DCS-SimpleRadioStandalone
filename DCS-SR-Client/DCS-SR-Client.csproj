@@ -25,10 +25,10 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Company>Ciribob - GitHub.com/Ciribob</Company>
         <Product>DCS-SimpleRadio Standalone</Product>
-        <ApplicationVersion>2.2.0.5</ApplicationVersion>
-        <AssemblyVersion>2.2.0.5</AssemblyVersion>
-        <FileVersion>2.2.0.5</FileVersion>
-        <Version>2.2.0.5</Version>
+        <ApplicationVersion>2.3.0.3</ApplicationVersion>
+        <AssemblyVersion>2.3.0.3</AssemblyVersion>
+        <FileVersion>2.3.0.3</FileVersion>
+        <Version>2.3.0.3</Version>
         <ApplicationIcon>audio-headset.ico</ApplicationIcon>
     </PropertyGroup>
     <PropertyGroup>
