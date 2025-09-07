@@ -15,8 +15,6 @@ internal class AudioRecordingLameWriter : AudioRecordingWriterBase
     private readonly List<string> _mp3FilePaths;
     private readonly List<LameMP3FileWriter> _mp3FileWriters;
 
-    private readonly string _recordingDirectory;
-
     // construct an audio file writer that uses LAME to encode the streams in an .mp3 file using
     // the specified sample rate. the streams list provides the audio streams that supply the
     // audio data, each stream is written to its own file (named per the current date and time
@@ -27,31 +25,6 @@ internal class AudioRecordingLameWriter : AudioRecordingWriterBase
     {
         _mp3FilePaths = new List<string>();
         _mp3FileWriters = new List<LameMP3FileWriter>();
-
-        // ensure the recording directory exists
-        _recordingDirectory = GetRecordingDirectory();
-    }
-
-    private string GetRecordingDirectory()
-    {
-        string dir = GlobalSettingsStore.Instance.GetClientSetting(GlobalSettingsKeys.RecordingPath).StringValue;
-        if (string.IsNullOrEmpty(dir))
-            dir = "Recordings"; // default recording directory
-
-        // If not an absolute path, combine with executable directory
-        if (!Path.IsPathRooted(dir))
-        {
-            string exeDir = AppDomain.CurrentDomain.BaseDirectory;
-            dir = Path.Combine(exeDir, dir);
-        }
-
-        if (!Directory.Exists(dir))
-        {
-            _logger.Info($"Recording directory '{dir}' missing, creating directory");
-            Directory.CreateDirectory(dir);
-        }
-
-        return dir;
     }
 
     // attempt to write up to the max samples from each stream to their output files. this will
@@ -69,12 +42,13 @@ internal class AudioRecordingLameWriter : AudioRecordingWriterBase
 
     public override void Start()
     {
-        // streams are stored in Recordings directory, named "<date>-<time><tag>.mp3"
+        // Get User Setting for Recording Directory
+        string recordingDir = GetRecordingDirectory(); 
+
+        // streams are stored in User defined recordings directory, named "<date>-<time><tag>.mp3"
         var sanitisedDate = string.Join("-", DateTime.Now.ToShortDateString().Split(Path.GetInvalidFileNameChars()));
         var sanitisedTime = string.Join("-", DateTime.Now.ToLongTimeString().Split(Path.GetInvalidFileNameChars()));
-
-        var filePathBase = $"{_recordingDirectory}\\{sanitisedDate}-{sanitisedTime}";
-        
+        var filePathBase = $"{recordingDir}\\{sanitisedDate}-{sanitisedTime}";
 
         var lamePreset = (LAMEPreset)Enum.Parse(typeof(LAMEPreset),
             GlobalSettingsStore.Instance.GetClientSetting(GlobalSettingsKeys.RecordingQuality).RawValue);
