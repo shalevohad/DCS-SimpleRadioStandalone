@@ -405,15 +405,6 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Current recording path:.
-        /// </summary>
-        public static string currentSetRecordingDirectory {
-            get {
-                return ResourceManager.GetString("currentSetRecordingDirectory", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Unit:.
         /// </summary>
         public static string CurrentUnitLabel {
@@ -491,6 +482,24 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         public static string DeviceSet {
             get {
                 return ResourceManager.GetString("DeviceSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The directory you entered does not exist.
+        /// </summary>
+        public static string DirectoryNotExist {
+            get {
+                return ResourceManager.GetString("DirectoryNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Directory Not Found.
+        /// </summary>
+        public static string DirectoryNotFound {
+            get {
+                return ResourceManager.GetString("DirectoryNotFound", resourceCulture);
             }
         }
         
@@ -1805,24 +1814,6 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SRS Recordings Path.
-        /// </summary>
-        public static string MsgBoxSetSRSRecordingPath {
-            get {
-                return ResourceManager.GetString("MsgBoxSetSRSRecordingPath", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Recording Path set to.
-        /// </summary>
-        public static string MsgBoxSetSRSRecordingPathText {
-            get {
-                return ResourceManager.GetString("MsgBoxSetSRSRecordingPathText", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Thank You!.
         /// </summary>
         public static string MsgBoxThankYou {
@@ -2601,15 +2592,6 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please select a directory for recordings.
-        /// </summary>
-        public static string SelectRecordingDirectory {
-            get {
-                return ResourceManager.GetString("SelectRecordingDirectory", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Server.
         /// </summary>
         public static string Server {
@@ -2669,15 +2651,6 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         public static string SetSRSRecordingPath {
             get {
                 return ResourceManager.GetString("SetSRSRecordingPath", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Set Path.
-        /// </summary>
-        public static string SetSRSRecordingPathBtn {
-            get {
-                return ResourceManager.GetString("SetSRSRecordingPathBtn", resourceCulture);
             }
         }
         
@@ -2772,38 +2745,11 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The directory you entered does not exist.
-        /// </summary>
-        public static string SRSDirectoryNotExist {
-            get {
-                return ResourceManager.GetString("SRSDirectoryNotExist", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Directory Not Found.
-        /// </summary>
-        public static string SRSDirectoryNotFound {
-            get {
-                return ResourceManager.GetString("SRSDirectoryNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to SRS Interface.
         /// </summary>
         public static string SRSInterfaceHeader {
             get {
                 return ResourceManager.GetString("SRSInterfaceHeader", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Recording Path.
-        /// </summary>
-        public static string SRSRecordingPath {
-            get {
-                return ResourceManager.GetString("SRSRecordingPath", resourceCulture);
             }
         }
         
