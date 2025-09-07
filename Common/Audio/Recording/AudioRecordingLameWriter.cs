@@ -69,11 +69,7 @@ internal class AudioRecordingLameWriter : AudioRecordingWriterBase
 
     public override void Start()
     {
-        // streams are stored in GlobalSettingsKeys.RecordingPath directory, named "<tag> <date-time>.mp3" to match the tacview sync.
-        // Optional is autoload convention - if the tag will be callsign and with numbering identification)
-        //var sanitisedDateTime = DateTime.UtcNow.ToString("yyyyMMdd'T'HHmmss'Z'"); //need to change it for DCS time in order to autosync?
-        //var filePathBase = _recordingDirectory + @"\";
-
+        // streams are stored in Recordings directory, named "<date>-<time><tag>.mp3"
         var sanitisedDate = string.Join("-", DateTime.Now.ToShortDateString().Split(Path.GetInvalidFileNameChars()));
         var sanitisedTime = string.Join("-", DateTime.Now.ToLongTimeString().Split(Path.GetInvalidFileNameChars()));
 
