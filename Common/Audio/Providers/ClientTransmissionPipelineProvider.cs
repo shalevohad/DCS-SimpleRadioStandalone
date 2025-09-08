@@ -33,7 +33,7 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Common.Audio.Providers
 
         public void Process(DeJitteredTransmission transmission, Span<float> audioOut)
         {
-
+            RefreshSettings();
             if (transmission.NoAudioEffects)
                 return;
 
