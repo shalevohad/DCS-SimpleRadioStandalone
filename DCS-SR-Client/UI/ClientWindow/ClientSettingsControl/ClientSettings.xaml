@@ -867,6 +867,18 @@
                                       VerticalAlignment="Top"
                                       ItemsSource="{Binding ServerPresetConfigurations}"
                                       SelectedItem="{Binding SelectedServerPresetConfiguration, Mode=TwoWay}" />
+                            
+                            <Label Grid.Row="10"
+                                   Grid.Column="0"
+                                   HorizontalContentAlignment="Center"
+                                   VerticalContentAlignment="Center"
+                                   Content="{x:Static p:Resources.AllowServerEAMRadioPreset}" />
+
+
+                            <clientSettingsControl:SettingsToggleControl
+                                Grid.Row="10"
+                                Grid.Column="1"
+                                ToggleValue="{Binding ServerEAMRadioPresetEnabled, Mode=TwoWay}" />
                         </Grid>
                     </GroupBox>
 

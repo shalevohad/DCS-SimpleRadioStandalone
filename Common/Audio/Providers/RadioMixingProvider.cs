@@ -6,6 +6,7 @@ using Ciribob.DCS.SimpleRadio.Standalone.Common.Settings;
 using NAudio.SoundFont;
 using NAudio.Utils;
 using NAudio.Wave;
+using NLog;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Common.Audio.Providers;
 
 public class RadioMixingProvider : ISampleProvider
 {
+    private static readonly Logger logger = LogManager.GetCurrentClassLogger();
     private readonly AudioRecordingManager _audioRecordingManager = AudioRecordingManager.Instance;
 
     private readonly CachedAudioEffectProvider _cachedAudioEffectsProvider;
@@ -105,16 +107,24 @@ public class RadioMixingProvider : ISampleProvider
                     // #TODO: Should run TX effect chain per ClientAudioProvider, then mixdown.
                     // Read from the source, which should dejitter + transform the audio.
                     // Then have this radio run its mixer.
-                    var segment = source.Read(radioId, desired);
-                    if (segment != null)
+                    try
                     {
-                        segments.Add(segment);
-                        longestSegmentLength = Math.Max(longestSegmentLength, segment.AudioSpan.Length);
-                        if (segment.Decryptable && segment.HasEncryption)
+                        var segment = source.Read(radioId, desired);
+                        if (segment != null)
                         {
-                            ky58Tone = true;
+                            segments.Add(segment);
+                            longestSegmentLength = Math.Max(longestSegmentLength, segment.AudioSpan.Length);
+                            if (segment.Decryptable && segment.HasEncryption)
+                            {
+                                ky58Tone = true;
+                            }
                         }
                     }
+                    catch (Exception e)
+                    {
+                        logger.Error("Error reading from source: ", e);
+                    }
+                    
 
                     index--;
                 }
@@ -135,25 +145,33 @@ public class RadioMixingProvider : ISampleProvider
             // Queue new audio (if any).
             if (hasIncomingAudio)
             {
-                // Need to be able to hold whatever is left over + incoming audio.
-                var totalSize = availableInBuffer + longestSegmentLength;
-                if (mixBuffer == null || mixBuffer.Length < totalSize)
+                try
                 {
-                    Array.Resize(ref mixBuffer, totalSize);
+                    // Need to be able to hold whatever is left over + incoming audio.
+                    var totalSize = availableInBuffer + longestSegmentLength;
+                    if (mixBuffer == null || mixBuffer.Length < totalSize)
+                    {
+                        Array.Resize(ref mixBuffer, totalSize);
+                    }
+
+                    var targetSpan = mixBuffer.AsSpan(availableInBuffer, longestSegmentLength);
+                    targetSpan.Clear();
+
+
+                    // #TODO: pass receiving radio model name.
+                    pipeline.ProcessSegments(mixBuffer, availableInBuffer, longestSegmentLength, segments, null);
+
+                    //now clip all mixing
+                    AudioManipulationHelper.ClipArray(targetSpan);
+                    availableInBuffer += targetSpan.Length;
+
+                    // Drain newly queued audio.
+                    monoOffset += ReadMixBuffer(monoBuffer, monoOffset, monoBufferLength - monoOffset);
                 }
-
-                var targetSpan = mixBuffer.AsSpan(availableInBuffer, longestSegmentLength);
-                targetSpan.Clear();
-
-                // #TODO: pass receiving radio model name.
-                pipeline.ProcessSegments(mixBuffer, availableInBuffer, longestSegmentLength, segments, null);
-
-                //now clip all mixing
-                AudioManipulationHelper.ClipArray(targetSpan);
-                availableInBuffer += targetSpan.Length;
-
-                // Drain newly queued audio.
-                monoOffset += ReadMixBuffer(monoBuffer, monoOffset, monoBufferLength - monoOffset);
+                catch (Exception e)
+                {
+                    logger.Error("Error mixing segments: ", e);
+                }
             }
 
             // Return everything to the pool

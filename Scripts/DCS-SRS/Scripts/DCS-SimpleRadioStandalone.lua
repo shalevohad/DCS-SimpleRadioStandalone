@@ -1,4 +1,5 @@
--- Version 2.2.0.5
+-- Version 2.3.0.3
+
 -- Special thanks to Cap. Zeen, Tarres and Splash for all the help
 -- with getting the radio information :)
 -- Run the installer to correctly install this file
@@ -198,7 +199,35 @@ function SR.ModsPuginsRecursiveSearch(modsPath)
     end
 end
 
+function SR.shouldUseUnitDetails(_slot)
+
+    if  _slot == "Tactical-Commander" or _slot == "Game-Master" or _slot == "JTAC-Operator" or _slot == "Observer"  then
+        return false
+    end
+    
+    return true
+end
+
 function SR.exporter()
+
+    local _slot = ''
+
+    if SR.lastKnownSlot == nil or SR.lastKnownSlot == '' then
+        _slot = 'Spectator'
+    else
+        if string.find(SR.lastKnownSlot, 'artillery_commander') then
+            _slot = "Tactical-Commander"
+        elseif string.find(SR.lastKnownSlot, 'instructor') then
+            _slot = "Game-Master"
+        elseif string.find(SR.lastKnownSlot, 'forward_observer') then
+            _slot = "JTAC-Operator" -- "JTAC"
+        elseif string.find(SR.lastKnownSlot, 'observer') then
+            _slot = "Observer"
+        else
+            _slot = SR.lastKnownSlot
+        end
+    end
+    
     local _update
     local _data = LoGetSelfData()
 
@@ -214,7 +243,7 @@ function SR.exporter()
         end
     end
 
-    if _data ~= nil then
+    if _data ~= nil and SR.shouldUseUnitDetails(_slot) then
 
         _update = {
             name = "",
@@ -328,23 +357,8 @@ function SR.exporter()
         _lastUnitId = _update.unitId
         _lastUnitType = _data.Name
     else
-        local _slot = ''
-
-        if SR.lastKnownSlot == nil or SR.lastKnownSlot == '' then
-            _slot = 'Spectator'
-        else
-            if string.find(SR.lastKnownSlot, 'artillery_commander') then
-                _slot = "Tactical-Commander"
-            elseif string.find(SR.lastKnownSlot, 'instructor') then
-                _slot = "Game-Master"
-            elseif string.find(SR.lastKnownSlot, 'forward_observer') then
-                _slot = "JTAC-Operator" -- "JTAC"
-            elseif string.find(SR.lastKnownSlot, 'observer') then
-                _slot = "Observer"
-            else
-                _slot = SR.lastKnownSlot
-            end
-        end
+        -- There may be a unit but we're purposely ignoring it if you're in a special slot
+        
         --Ground Commander or spectator
         _update = {
             name = "Unknown",
@@ -380,11 +394,13 @@ function SR.exporter()
             _update = aircraftExporter(_update)
         end
 
-        -- Disable camera position if you're not in a vehicle now
-        --local _latLng,_point = SR.exportCameraLocation()
-        --
-        --_update.latLng = _latLng
-        --SR.lastKnownPos = _point
+        -- Use vehicle position if we have one so when you join a vehicle you get LOS etc
+        if _data ~= nil then
+            local _latLng,_point = SR.exportPlayerLocation(_data)
+
+            _update.latLng = _latLng
+            SR.lastKnownPos = _point
+        end
 
         _lastUnitId = ""
         _lastUnitType = ""
@@ -6466,7 +6482,7 @@ function SR.exportRadioF1CE(_data)
     end
 
     if SR.getSelectorPosition(282,0.5) == 1 then
-        _data.radios[2].channel = SR.getNonStandardSpinner(283, {[0.000]= "1", [0.050]= "2",[0.100]= "3",[0.150]= "4",[0.200]= "5",[0.250]= "6",[0.300]= "7",[0.350]= "8",[0.400]= "9",[0.450]= "10",[0.500]= "11",[0.550]= "12",[0.600]= "13",[0.650]= "14",[0.700]= "15",[0.750]= "16",[0.800]= "17",[0.850]= "18",[0.900]= "19",[0.950]= "20"},0.05,3)
+        _data.radios[2].channel = SR.getNonStandardSpinner(283, {[0.000]= 1, [0.050]= 2,[0.100]= 3,[0.150]= 4,[0.200]= 5,[0.250]= 6,[0.300]= 7,[0.350]= 8,[0.400]= 9,[0.450]= 10,[0.500]= 11,[0.550]= 12,[0.600]= 13,[0.650]= 14,[0.700]= 15,[0.750]= 16,[0.800]= 17,[0.850]= 18,[0.900]= 19,[0.950]= 20},0.05,3)
     end
 
     _data.radios[3].name = "TRAP-137B UHF"
@@ -6474,7 +6490,7 @@ function SR.exportRadioF1CE(_data)
     _data.radios[3].modulation = 0
     _data.radios[3].volume = SR.getRadioVolume(0, 314,{0.0,1.0},false)
     _data.radios[3].volMode = 0
-    _data.radios[3].channel = SR.getNonStandardSpinner(348, {[0.000]= "1", [0.050]= "2",[0.100]= "3",[0.150]= "4",[0.200]= "5",[0.250]= "6",[0.300]= "7",[0.350]= "8",[0.400]= "9",[0.450]= "10",[0.500]= "11",[0.550]= "12",[0.600]= "13",[0.650]= "14",[0.700]= "15",[0.750]= "16",[0.800]= "17",[0.850]= "18",[0.900]= "19",[0.950]= "20"},0.05,3)
+    _data.radios[3].channel = SR.getNonStandardSpinner(348, {[0.000]= 1, [0.050]= 2,[0.100]= 3,[0.150]= 4,[0.200]= 5,[0.250]= 6,[0.300]= 7,[0.350]= 8,[0.400]= 9,[0.450]= 10,[0.500]= 11,[0.550]= 12,[0.600]= 13,[0.650]= 14,[0.700]= 15,[0.750]= 16,[0.800]= 17,[0.850]= 18,[0.900]= 19,[0.950]= 20},0.05,3)
 
 
     -- Handle transponder
@@ -6579,7 +6595,7 @@ function SR.exportRadioF1BE(_data)
     _data.radios[3].freq = SR.getRadioFrequency(8)
     _data.radios[3].modulation = 0
     _data.radios[3].volMode = 0
-    _data.radios[3].channel = SR.getNonStandardSpinner(348, {[0.000]= "1", [0.050]= "2",[0.100]= "3",[0.150]= "4",[0.200]= "5",[0.250]= "6",[0.300]= "7",[0.350]= "8",[0.400]= "9",[0.450]= "10",[0.500]= "11",[0.550]= "12",[0.600]= "13",[0.650]= "14",[0.700]= "15",[0.750]= "16",[0.800]= "17",[0.850]= "18",[0.900]= "19",[0.950]= "20"},0.05,3)
+    _data.radios[3].channel = SR.getNonStandardSpinner(348, {[0.000]= 1, [0.050]= 2,[0.100]= 3,[0.150]= 4,[0.200]= 5,[0.250]= 6,[0.300]= 7,[0.350]= 8,[0.400]= 9,[0.450]= 10,[0.500]= 11,[0.550]= 12,[0.600]= 13,[0.650]= 14,[0.700]= 15,[0.750]= 16,[0.800]= 17,[0.850]= 18,[0.900]= 19,[0.950]= 20},0.05,3)
 
     _data.iff = {status=0,mode1=0,mode3=0,mode4=false,control=0,expansion=false}
 
@@ -6648,7 +6664,7 @@ function SR.exportRadioF1BE(_data)
         end
 
         if SR.getSelectorPosition(282,0.5) == 1 then
-            _data.radios[2].channel = SR.getNonStandardSpinner(283, {[0.000]= "1", [0.050]= "2",[0.100]= "3",[0.150]= "4",[0.200]= "5",[0.250]= "6",[0.300]= "7",[0.350]= "8",[0.400]= "9",[0.450]= "10",[0.500]= "11",[0.550]= "12",[0.600]= "13",[0.650]= "14",[0.700]= "15",[0.750]= "16",[0.800]= "17",[0.850]= "18",[0.900]= "19",[0.950]= "20"},0.05,3)
+            _data.radios[2].channel = SR.getNonStandardSpinner(283, {[0.000]= 1, [0.050]= 2,[0.100]= 3,[0.150]= 4,[0.200]= 5,[0.250]= 6,[0.300]= 7,[0.350]= 8,[0.400]= 9,[0.450]= 10,[0.500]= 11,[0.550]= 12,[0.600]= 13,[0.650]= 14,[0.700]= 15,[0.750]= 16,[0.800]= 17,[0.850]= 18,[0.900]= 19,[0.950]= 20},0.05,3)
         end
 
         _data.radios[3].volume = SR.getRadioVolume(0, 314,{0.0,1.0},false)
@@ -6660,7 +6676,7 @@ function SR.exportRadioF1BE(_data)
         end
 
         if SR.getSelectorPosition(300,0.5) == 1 then
-            _data.radios[2].channel = SR.getNonStandardSpinner(303, {[0.000]= "1", [0.050]= "2",[0.100]= "3",[0.150]= "4",[0.200]= "5",[0.250]= "6",[0.300]= "7",[0.350]= "8",[0.400]= "9",[0.450]= "10",[0.500]= "11",[0.550]= "12",[0.600]= "13",[0.650]= "14",[0.700]= "15",[0.750]= "16",[0.800]= "17",[0.850]= "18",[0.900]= "19",[0.950]= "20"},0.05,3)
+            _data.radios[2].channel = SR.getNonStandardSpinner(303, {[0.000]= 1, [0.050]= 2,[0.100]= 3,[0.150]= 4,[0.200]= 5,[0.250]= 6,[0.300]= 7,[0.350]= 8,[0.400]= 9,[0.450]= 10,[0.500]= 11,[0.550]= 12,[0.600]= 13,[0.650]= 14,[0.700]= 15,[0.750]= 16,[0.800]= 17,[0.850]= 18,[0.900]= 19,[0.950]= 20},0.05,3)
         end
 
         _data.radios[3].volume = SR.getRadioVolume(0, 330,{0.0,1.0},false)
@@ -7967,4 +7983,4 @@ end
 -- Load mods' SRS plugins
 SR.LoadModsPlugins()
 
-SR.log("Loaded SimpleRadio Standalone Export version: 2.2.0.5")
+SR.log("Loaded SimpleRadio Standalone Export version: 2.3.0.3")

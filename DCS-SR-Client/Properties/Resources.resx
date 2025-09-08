@@ -1035,6 +1035,9 @@ Requires Tx or Rx Effects On</value>
   <data name="SrvPresetsEnabled" xml:space="preserve">
     <value>Server Presets Enabled</value>
   </data>
+  <data name="SrvEAMRadioPresetEnabled" xml:space="preserve">
+    <value>Server EAM Radio Preset Enabled</value>
+  </data>
   <data name="SrvSpectatorAudio" xml:space="preserve">
     <value>Spectator Audio</value>
   </data>
@@ -1216,11 +1219,17 @@ Requires Tx or Rx Effects On</value>
   <data name="DisableExpansionRadios" xml:space="preserve">
     <value>Disable Expansion Radios</value>
   </data>
+  <data name="RecordingFormat" xml:space="preserve">
+    <value>Recording Format (requires restart)</value>
+  </data>
   <data name="NoiseGainDB" xml:space="preserve">
     <value>Noise Gain (dB)</value>
   </data>
   <data name="ServerPresetsConfiguration" xml:space="preserve">
     <value>Channel Presets Configuration</value>
+  </data>
+  <data name="AllowServerEAMRadioPreset" xml:space="preserve">
+    <value>Allow the Server to configure EAM radios if set</value>
   </data>
   <data name="HFNoiseGainDB" xml:space="preserve">
     <value>HF Noise Gain (dB)</value>

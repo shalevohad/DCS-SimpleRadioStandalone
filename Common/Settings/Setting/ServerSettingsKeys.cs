@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Ciribob.DCS.SimpleRadio.Standalone.Common.Models;
 
 namespace Ciribob.DCS.SimpleRadio.Standalone.Common.Settings.Setting;
 
@@ -41,6 +43,9 @@ public enum ServerSettingsKeys
     WEBSOCKET_SERVER_ENABLED = 34,
     WEBSOCKET_SERVER_PORT = 35,
     WEBSOCKET_SERVER_MAX_CONNECTIONS = 36,
+    HTTP_SERVER_API_KEY = 37,
+    SERVER_EAM_RADIO_PRESET_ENABLED = 38,
+    SERVER_EAM_RADIO_PRESET = 39,
 }
 
 public class DefaultServerSettings
@@ -83,5 +88,7 @@ public class DefaultServerSettings
         { ServerSettingsKeys.WEBSOCKET_SERVER_ENABLED.ToString(), "false" },
         { ServerSettingsKeys.WEBSOCKET_SERVER_PORT.ToString(), "8081" },
         { ServerSettingsKeys.WEBSOCKET_SERVER_MAX_CONNECTIONS.ToString(), "10" },
+        { ServerSettingsKeys.HTTP_SERVER_API_KEY.ToString(), ShortGuid.NewGuid() },
+        { ServerSettingsKeys.SERVER_EAM_RADIO_PRESET_ENABLED.ToString(), "false" },
     };
 }

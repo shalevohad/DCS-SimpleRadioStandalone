@@ -279,6 +279,18 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
                 .ServerPresetSelection);
     }
 
+    public bool ServerEAMRadioPresetEnabled
+    {
+        get =>   GlobalSettingsStore.Instance.ProfileSettingsStore.GetClientSettingBool(
+            ProfileSettingsKeys.AllowServerEAMRadioPreset);
+        set
+        {
+            _globalSettings.ProfileSettingsStore.SetClientSettingBool(ProfileSettingsKeys.AllowServerEAMRadioPreset,
+                value);
+            NotifyPropertyChanged();
+        }
+    }
+    
     public bool VOXEnabled
     {
         get => _globalSettings.GetClientSettingBool(GlobalSettingsKeys.VOX);

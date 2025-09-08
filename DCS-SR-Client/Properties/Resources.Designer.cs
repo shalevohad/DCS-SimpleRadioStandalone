@@ -88,6 +88,15 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allow the Server to configure EAM radios if set.
+        /// </summary>
+        public static string AllowServerEAMRadioPreset {
+            get {
+                return ResourceManager.GetString("AllowServerEAMRadioPreset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Allow Transmissions To Be Recorded.
         /// </summary>
         public static string AllowTransmissionsRecord {
@@ -2732,6 +2741,15 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         public static string SrvDistance {
             get {
                 return ResourceManager.GetString("SrvDistance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server EAM Radio Preset Enabled.
+        /// </summary>
+        public static string SrvEAMRadioPresetEnabled {
+            get {
+                return ResourceManager.GetString("SrvEAMRadioPresetEnabled", resourceCulture);
             }
         }
         
