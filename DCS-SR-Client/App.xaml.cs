@@ -30,6 +30,7 @@ public partial class App : Application
 
     public App()
     {
+        System.Windows.Forms.Application.EnableVisualStyles();
         //Thread.CurrentThread.CurrentUICulture = new CultureInfo("zh-CN");
         SentrySdk.Init("https://1b22a96cbcc34ee4b9db85c7fa3fe4e3@o414743.ingest.sentry.io/5304752");
         AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionHandler;
@@ -167,7 +168,7 @@ public partial class App : Application
                 catch (Win32Exception)
                 {
                     MessageBox.Show(
-                        "SRS Requires admin rights to be able to read keyboard input in the background. \n\nIf you do not use any keyboard binds for SRS and want to stop this message - Disable Require Admin Rights in SRS Settings\n\nSRS will continue without admin rights but keyboard binds will not work!",
+                        "SRS could not restart with elevated privilages.\n\nUnless you have a very specific need you should disable the Require Admin option in the settings.",
                         "UAC Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             });

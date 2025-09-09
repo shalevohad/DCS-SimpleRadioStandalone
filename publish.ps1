@@ -23,7 +23,6 @@ if ($Zip) {
 }
 
 # Publish script for SRS projects
-$framework = "net8.0-windows"
 $outputPath = ".\install-build"
 
 # Common publish parameters
@@ -58,7 +57,6 @@ Write-Host "Publishing DCS-SR-Client..." -ForegroundColor Green
 Remove-Item "$outputPath\Client" -Recurse -ErrorAction SilentlyContinue
 dotnet clean "./DCS-SR-Client/DCS-SR-Client.csproj"
 dotnet publish "./DCS-SR-Client/DCS-SR-Client.csproj" `
-    --framework "net8.0-windows10.0.22000.0" `
     --runtime win-x64 `
     --output "$outputPath\Client" `
     --self-contained false `
@@ -73,7 +71,6 @@ Write-Host "Publishing Server..." -ForegroundColor Green
 Remove-Item "$outputPath\Server" -Recurse -ErrorAction SilentlyContinue
 dotnet clean "./Server/Server.csproj"
 dotnet publish "./Server/Server.csproj" `
-    --framework $framework `
     --runtime win-x64 `
     --output "$outputPath\Server" `
     --self-contained false `
@@ -87,7 +84,6 @@ Write-Host "Publishing ServerCommandLine for Windows..." -ForegroundColor Green
 Remove-Item "$outputPath\ServerCommandLine-Windows" -Recurse -ErrorAction SilentlyContinue
 dotnet clean "./ServerCommandLine\ServerCommandLine.csproj"
 dotnet publish "./ServerCommandLine\ServerCommandLine.csproj" `
-    --framework net8.0 `
     --runtime win-x64 `
     --output "$outputPath\ServerCommandLine-Windows" `
     --self-contained true `
@@ -99,7 +95,6 @@ Write-Host "Publishing ServerCommandLine for Linux..." -ForegroundColor Green
 Remove-Item "$outputPath\ServerCommandLine-Linux" -Recurse -ErrorAction SilentlyContinue
 dotnet clean "./ServerCommandLine\ServerCommandLine.csproj"
 dotnet publish "./ServerCommandLine\ServerCommandLine.csproj" `
-    --framework net8.0 `
     --runtime linux-x64 `
     --output "$outputPath\ServerCommandLine-Linux" `
     --self-contained true `
@@ -112,7 +107,6 @@ Write-Host "Publishing DCS-SR-ExternalAudio..." -ForegroundColor Green
 Remove-Item "$outputPath\ExternalAudio" -Recurse -ErrorAction SilentlyContinue
 dotnet clean "./DCS-SR-ExternalAudio\DCS-SR-ExternalAudio.csproj"
 dotnet publish "./DCS-SR-ExternalAudio\DCS-SR-ExternalAudio.csproj" `
-    --framework $framework `
     --runtime win-x64 `
     --output "$outputPath\ExternalAudio" `
     --self-contained false `
@@ -125,7 +119,6 @@ Write-Host "Publishing AutoUpdater..." -ForegroundColor Green
 Remove-Item "$outputPath\AutoUpdater" -Recurse -ErrorAction SilentlyContinue
 dotnet clean "./AutoUpdater\AutoUpdater.csproj"
 dotnet publish "./AutoUpdater\AutoUpdater.csproj" `
-    --framework $framework `
     --runtime win-x64 `
     --output "$outputPath\AutoUpdater" `
     --self-contained false `
@@ -152,7 +145,6 @@ Write-Host "Publishing Installer..." -ForegroundColor Green
 Remove-Item "$outputPath\Installer" -Recurse -ErrorAction SilentlyContinue
 dotnet clean "./Installer\Installer.csproj"
 dotnet publish "./Installer\Installer.csproj" `
-    --framework $framework `
     --runtime win-x64 `
     --output "$outputPath\Installer" `
     --self-contained false `
@@ -177,83 +169,83 @@ Write-Host "Signing files"
 
 if ($NoSign) {
     Write-Host "Skipped"
-    exit 0
-}
-
-# Define the root path to search for files to be signed
-# The script will recursively find all .dll and .exe files in this path and its subdirectories.
-$searchPath = $outputPath
-
-if (-not (Test-Path $searchPath -PathType Container)) {
-    Write-Error "Search path '$searchPath' not found or is not a directory. Please verify the path."
-    exit 1
-}
-
-Write-Host "Searching for .dll and .exe files in '$searchPath' and its subdirectories..."
-# Get all .exe files recursively. -File ensures we only get files.
-try {
-    $filesToSign = Get-ChildItem -Path $searchPath -Recurse -Include "srs.dll", "*.exe" -File -ErrorAction Stop
-} catch {
-    Write-Error "Error occurred while searching for files: $($_.Exception.Message)"
-    exit 1
-}
-
-
-if ($null -eq $filesToSign -or $filesToSign.Count -eq 0) {
-    Write-Warning "No .exe files found in '$searchPath' to sign."
 } else {
-    Write-Host "Found $($filesToSign.Count) file(s) to process."
+    # Define the root path to search for files to be signed
+    # The script will recursively find all .dll and .exe files in this path and its subdirectories.
+    $searchPath = $outputPath
 
-    # Loop through each found file and sign it
-    foreach ($fileInstance in $filesToSign) {
-        $filePath = $fileInstance.FullName # Get the full path of the file
+    if (-not (Test-Path $searchPath -PathType Container)) {
+        Write-Error "Search path '$searchPath' not found or is not a directory. Please verify the path."
+        exit 1
+    }
 
-        if ($fileInstance.FullName -match "VC_redist.x64")
-        {
-            Write-Host "Skipping VCRedist " -ForegroundColor Green
-            continue
-        }
+    Write-Host "Searching for .dll and .exe files in '$searchPath' and its subdirectories..."
+    # Get all .exe files recursively. -File ensures we only get files.
+    try {
+        $filesToSign = Get-ChildItem -Path $searchPath -Recurse -Include "srs.dll", "*.exe" -File -ErrorAction Stop
+    } catch {
+        Write-Error "Error occurred while searching for files: $($_.Exception.Message)"
+        exit 1
+    }
 
-        Write-Host "Attempting to sign $filePath..."
 
-        # Explicitly quote the file path argument for signtool
-        $quotedFilePath = "`"$filePath`""
+    if ($null -eq $filesToSign -or $filesToSign.Count -eq 0) {
+        Write-Warning "No .exe files found in '$searchPath' to sign."
+    } else {
+        Write-Host "Found $($filesToSign.Count) file(s) to process."
 
-        # Construct the arguments for the current file.
-        # The explicitly quoted file path is added as the last argument.
-        $currentFileArgs = $commonParameters + $quotedFilePath
+        # Loop through each found file and sign it
+        foreach ($fileInstance in $filesToSign) {
+            $filePath = $fileInstance.FullName # Get the full path of the file
 
-        # Start the signing process
-        # Using Start-Process to call external executables is a robust way.
-        # -NoNewWindow keeps the output in the current console.
-        # -Wait ensures PowerShell waits for signtool.exe to complete.
-        # -PassThru returns a process object (useful for checking ExitCode).
-        try {
-            $process = Start-Process -FilePath $signToolPath -ArgumentList $currentFileArgs -Wait -PassThru -NoNewWindow -ErrorAction Stop
-            
-            Write-Host "Start-Process -FilePath $signToolPath -ArgumentList $currentFileArgs -Wait -PassThru -NoNewWindow -ErrorAction Stop"
-            
-            if ($process.ExitCode -eq 0) {
-                Write-Host "Successfully signed $filePath." -ForegroundColor Green
-            } else {
-                # Signtool.exe usually outputs its own errors to stderr, which PowerShell might show.
-                Write-Error "Failed to sign $filePath. SignTool.exe exited with code: $($process.ExitCode). Check output above for details from SignTool."
-                
-                exit 1;
+            if ($fileInstance.FullName -match "VC_redist.x64")
+            {
+                Write-Host "Skipping VCRedist " -ForegroundColor Green
+                continue
             }
-        } catch {
-            Write-Error "An error occurred while trying to run SignTool.exe for $filePath. Error: $($_.Exception.Message)"
+
+            Write-Host "Attempting to sign $filePath..."
+
+            # Explicitly quote the file path argument for signtool
+            $quotedFilePath = "`"$filePath`""
+
+            # Construct the arguments for the current file.
+            # The explicitly quoted file path is added as the last argument.
+            $currentFileArgs = $commonParameters + $quotedFilePath
+
+            # Start the signing process
+            # Using Start-Process to call external executables is a robust way.
+            # -NoNewWindow keeps the output in the current console.
+            # -Wait ensures PowerShell waits for signtool.exe to complete.
+            # -PassThru returns a process object (useful for checking ExitCode).
+            try {
+                $process = Start-Process -FilePath $signToolPath -ArgumentList $currentFileArgs -Wait -PassThru -NoNewWindow -ErrorAction Stop
+                
+                Write-Host "Start-Process -FilePath $signToolPath -ArgumentList $currentFileArgs -Wait -PassThru -NoNewWindow -ErrorAction Stop"
+                
+                if ($process.ExitCode -eq 0) {
+                    Write-Host "Successfully signed $filePath." -ForegroundColor Green
+                } else {
+                    # Signtool.exe usually outputs its own errors to stderr, which PowerShell might show.
+                    Write-Error "Failed to sign $filePath. SignTool.exe exited with code: $($process.ExitCode). Check output above for details from SignTool."
+                    
+                    exit 1;
+                }
+            } catch {
+                Write-Error "An error occurred while trying to run SignTool.exe for $filePath. Error: $($_.Exception.Message)"
+            }
         }
     }
-}
-
-if(!$Zip){
-    exit 0
 }
 
 ### Zip
 
 Write-Host "Creating zip archive..." -ForegroundColor Green
+
+if(!$Zip){
+    Write-Warning "Skipped."
+    exit 0
+}
 
 
 Write-Host "Removing old zip files from '$outputPath'..." -ForegroundColor Yellow
