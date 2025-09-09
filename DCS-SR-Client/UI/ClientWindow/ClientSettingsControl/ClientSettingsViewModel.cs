@@ -409,12 +409,18 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
         get => _globalSettings.GetClientSettingBool(GlobalSettingsKeys.RequireAdmin);
         set
         {
-            _globalSettings.SetClientSetting(GlobalSettingsKeys.RequireAdmin, value);
-
-            MessageBox.Show(Application.Current.MainWindow,
+            if (value)
+            {
+                var choice = MessageBox.Show(Application.Current.MainWindow,
                 Resources.MsgBoxAdminText,
-                Resources.MsgBoxAdmin, MessageBoxButton.OK, MessageBoxImage.Warning);
+                Resources.MsgBoxAdmin, MessageBoxButton.YesNo, MessageBoxImage.Stop);
 
+                if (choice != MessageBoxResult.Yes)
+                {
+                    value = false;
+                }
+            }
+            _globalSettings.SetClientSetting(GlobalSettingsKeys.RequireAdmin, value);
             NotifyPropertyChanged();
         }
     }

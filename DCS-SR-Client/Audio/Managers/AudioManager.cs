@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using Caliburn.Micro;
 using Ciribob.DCS.SimpleRadio.Standalone.Common.Audio.Utility;
 using Ciribob.DCS.SimpleRadio.Standalone.Client.Singletons;
@@ -14,7 +13,6 @@ using Ciribob.DCS.SimpleRadio.Standalone.Common.Audio.Models;
 using Ciribob.DCS.SimpleRadio.Standalone.Common.Audio.Opus.Core;
 using Ciribob.DCS.SimpleRadio.Standalone.Common.Audio.Providers;
 using Ciribob.DCS.SimpleRadio.Standalone.Common.Audio.Recording;
-using Ciribob.DCS.SimpleRadio.Standalone.Common.Audio.Utility;
 using Ciribob.DCS.SimpleRadio.Standalone.Common.Models.EventMessages;
 using Ciribob.DCS.SimpleRadio.Standalone.Common.Models.Player;
 using Ciribob.DCS.SimpleRadio.Standalone.Common.Network.Client;
@@ -25,12 +23,12 @@ using NAudio.Utils;
 using NAudio.Wave;
 using NLog;
 using WebRtcVadSharp;
-using WPFCustomMessageBox;
 using Application = Ciribob.DCS.SimpleRadio.Standalone.Common.Audio.Opus.Application;
 using LogManager = NLog.LogManager;
 using Ciribob.DCS.SimpleRadio.Standalone.Client.Audio.Utility;
 using System.Buffers;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Audio.Managers;
 
@@ -419,55 +417,82 @@ public class AudioManager : IHandle<SRClientUpdateMessage>
 
     private void ShowInputError(string message)
     {
-        if (Environment.OSVersion.Version.Major == 10)
+        var audioInputErrorDialog = TaskDialog.ShowDialog(new TaskDialogPage
         {
-            var messageBoxResult = CustomMessageBox.ShowYesNoCancel(
-                $"{message}\n\n" +
-                $"If you are using Windows 10, this could be caused by your privacy settings (make sure to allow apps to access your microphone)." +
+            Caption = "Audio Input Error",
+            Heading = message,
+            Text = $"If you are using Windows 10 or above, this could be caused by your privacy settings (make sure to allow apps to access your microphone)." +
                 $"\nAlternatively, try a different Input device and please post your client log to the support Discord server.",
-                "Audio Input Error",
-                "OPEN PRIVACY SETTINGS",
-                "JOIN DISCORD SERVER",
-                "CLOSE",
-                MessageBoxImage.Error);
-            //TODO fix process start
-            if (messageBoxResult == MessageBoxResult.Yes)
-                Process.Start(new ProcessStartInfo("ms-settings:privacy-microphone")
-                    { UseShellExecute = true });
-            else if (messageBoxResult == MessageBoxResult.No)
-                Process.Start(new ProcessStartInfo("https://discord.gg/baw7g3t")
-                    { UseShellExecute = true });
-        }
-        else
-        {
-            //TODO fix process start
-            var messageBoxResult = CustomMessageBox.ShowYesNo(
-                $"{message}\n\n" +
-                "Try a different Input device and please post your client log to the support Discord server.",
-                "Audio Input Error",
-                "JOIN DISCORD SERVER",
-                "CLOSE",
-                MessageBoxImage.Error);
+            Icon = TaskDialogIcon.Error,
+            Buttons =
+            {
+                new TaskDialogButton
+                {
+                    Text = "OPEN PRIVACY SETTINGS",
+                    Tag = 1
+                },
+                new TaskDialogButton
+                {
+                    Text =  "JOIN DISCORD SERVER",
+                    Tag = 2
+                },
+                new TaskDialogButton
+                {
+                    Text = "CLOSE",
+                    Tag = 3
+                }
+            }
+        });
 
-            if (messageBoxResult == MessageBoxResult.Yes)
-                Process.Start(new ProcessStartInfo("https://discord.gg/baw7g3t")
+        if (audioInputErrorDialog.Tag is int choice)
+        {
+            switch (choice)
+            {
+                case 1:
+                    Process.Start(new ProcessStartInfo("ms-settings:privacy-microphone")
                     { UseShellExecute = true });
+                    break;
+                case 2:
+                    Process.Start(new ProcessStartInfo("https://discord.gg/baw7g3t")
+                    { UseShellExecute = true });
+                    break;
+            }
         }
     }
 
     private void ShowOutputError(string message)
     {
-        var messageBoxResult = CustomMessageBox.ShowYesNo(
-            $"{message}\n\n" +
-            "Try a different output device and please post your client log to the support Discord server.",
-            "Audio Output Error",
-            "JOIN DISCORD SERVER",
-            "CLOSE",
-            MessageBoxImage.Error);
-        //TODO fix process start
-        if (messageBoxResult == MessageBoxResult.Yes)
-            Process.Start(new ProcessStartInfo("https://discord.gg/baw7g3t")
-                { UseShellExecute = true });
+        var audioOutputErrorDialog = TaskDialog.ShowDialog(new TaskDialogPage
+        {
+            Caption = "Audio Output Error",
+            Heading = message,
+            Text = "Try a different output device and please post your client log to the support Discord server.",
+            Icon = TaskDialogIcon.Error,
+            Buttons =
+            {
+                new TaskDialogButton
+                {
+                    Text =  "JOIN DISCORD SERVER",
+                    Tag = 2
+                },
+                new TaskDialogButton
+                {
+                    Text = "CLOSE",
+                    Tag = 3
+                }
+            }
+        });
+
+        if (audioOutputErrorDialog.Tag is int choice)
+        {
+            switch (choice)
+            {
+                case 2:
+                    Process.Start(new ProcessStartInfo("https://discord.gg/baw7g3t")
+                    { UseShellExecute = true });
+                    break;
+            }
+        }
     }
 
     private void InitMixers()
