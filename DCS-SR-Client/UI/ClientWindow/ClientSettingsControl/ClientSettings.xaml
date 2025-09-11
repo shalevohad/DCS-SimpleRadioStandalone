@@ -489,6 +489,7 @@
                             <StackPanel Grid.Row="6" Grid.Column="1" Margin="10">
                                 <clientWindow:BrowseFolderControl
                                     Path="{Binding CurrentRecordingPath, Mode=TwoWay}"
+                                    DefaultPath="Recordings"
                                     DialogTitle="{x:Static p:Resources.SetSRSRecordingPath}"
                                  />
                             </StackPanel>

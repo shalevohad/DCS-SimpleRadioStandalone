@@ -8,8 +8,12 @@
              Height="Auto" Width="Auto">
 
     <StackPanel Orientation="Horizontal">
-        <TextBox Width="250"
-                  Text="{Binding Path, Mode=TwoWay, UpdateSourceTrigger=LostFocus, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+        <Label Width="250"
+               Content="{Binding DirectoryName, RelativeSource={RelativeSource AncestorType=UserControl}}"
+               ToolTip="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}}"
+               VerticalAlignment="Center"
+               Padding="4,0,0,0"/>
         <Button Content="{x:Static p:Resources.Browse}" Margin="5,0,0,0" Click="Browse_Click"/>
+        <Button Content="{x:Static p:Resources.Reset}" Margin="5,0,0,0" Click="Reset_Click"/>
     </StackPanel>
 </UserControl>
