@@ -39,49 +39,9 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
         }
         set
         {
-            /*
-             * the setter is configure to save relative paths to the working dir and also absolute paths to other locations.
-             * if the value is just string with no path parts or the path parts contain the working directory path,
-             * it will be saved as relative to working dir (stripped the working dir path from the value)
-             * otherwise, if it is an absolute path, it will be saved as absolute with no changes.
-             */
-
-            //strip main working dir if the path is rooted under it to keep it relative for ux purposes
-            string exeDir = AppDomain.CurrentDomain.BaseDirectory;
-            string valueToSave = value;
-            if (!string.IsNullOrEmpty(value) &&
-                Path.IsPathRooted(value) &&
-                value.StartsWith(exeDir, StringComparison.OrdinalIgnoreCase))
-            {
-                valueToSave = value.Substring(exeDir.Length)
-                    .TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            }
-
-            // Check if the directory exists, if not try to create it
-            if (!string.IsNullOrEmpty(valueToSave) && !Directory.Exists(valueToSave))
-            {
-                Logger.Info($"Directory for recordings does not exist: {valueToSave}");
-                try
-                {
-                    Directory.CreateDirectory(valueToSave);
-                    Logger.Info("Directory Created!");
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error(ex, $"Failed to create the recordings directory: '{ex.Message}'");
-                    MessageBox.Show(
-                        Application.Current.MainWindow,
-                        $"{Resources.DirectoryNotExist}:\n{valueToSave}\n\n{ex.Message}",
-                        Resources.DirectoryNotExist,
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                    return; // Do not save to config if directory creation failed
-                }
-            }
-
-            // Save the original value to config - if empty, it will stay empty for working dir saving
-            _globalSettings.SetClientSetting(GlobalSettingsKeys.RecordingPath, valueToSave);
-            Logger.Error($"Set recordings directory to: '{valueToSave}'");
+            //string exeDir = AppDomain.CurrentDomain.BaseDirectory;
+            _globalSettings.SetClientSetting(GlobalSettingsKeys.RecordingPath, value);
+            Logger.Error($"Set recordings directory to: '{value}'");
             NotifyPropertyChanged();
         }
     }
