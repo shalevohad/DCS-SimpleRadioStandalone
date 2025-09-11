@@ -63,7 +63,7 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Common.Audio.Recording
         {
             string dir = GlobalSettingsStore.Instance.GetClientSetting(GlobalSettingsKeys.RecordingPath).StringValue;
             if (string.IsNullOrEmpty(dir))
-                return AppDomain.CurrentDomain.BaseDirectory;
+                return Directory.GetCurrentDirectory();
 
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
             {
@@ -76,7 +76,7 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Common.Audio.Recording
                 catch (Exception ex)
                 {
                     _logger.Error(ex, $"Failed to create recording directory '{dir}': {ex.Message}");
-                    return AppDomain.CurrentDomain.BaseDirectory; //return base directory if we can't create the user specified one
+                    return Directory.GetCurrentDirectory(); //return CurrentDirectory if we can't create the user specified one
                 }
             }
 
