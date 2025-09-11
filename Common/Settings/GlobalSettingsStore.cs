@@ -294,7 +294,7 @@ public class GlobalSettingsStore
 
 
         { GlobalSettingsKeys.AGC.ToString(), "true" },
-        { GlobalSettingsKeys.AGCTarget.ToString(), "12000" },
+        { GlobalSettingsKeys.AGCTarget.ToString(), "14000" },
         { GlobalSettingsKeys.AGCDecrement.ToString(), "-60" },
         { GlobalSettingsKeys.AGCLevelMax.ToString(), "40" },
 
@@ -647,7 +647,7 @@ public class GlobalSettingsStore
             // * Fix up the values.
             SetClientSetting(GlobalSettingsKeys.AGC, true);
             SetClientSetting(GlobalSettingsKeys.AGCLevelMax, 45);
-            SetClientSetting(GlobalSettingsKeys.AGCTarget, 12000);
+            SetClientSetting(GlobalSettingsKeys.AGCTarget, 14000);
 
             // Upgrade done
             SetClientSetting(GlobalSettingsKeys.Version, 1);
