@@ -1249,7 +1249,18 @@ Requires Tx or Rx Effects On</value>
   <data name="PerRadioModelEffects" xml:space="preserve">
     <value>Enable Per Radio Model Effects</value>
   </data>
-  <data name="RecordingFormat" xml:space="preserve">
-    <value>Recording Format (requires restart)</value>
+  <data name="MicAGCMaxDB" xml:space="preserve">
+    <value>Max Gain (dB)</value>
+    <comment>Automatic Control Maximum gain</comment>
+  </data>
+  <data name="MicAGCTargetLevel" xml:space="preserve">
+    <value>Target Level ("loudness")</value>
+  </data>
+  <data name="MicAGCMaxDBToolTip" xml:space="preserve">
+    <value>Amount of volume 'boost' your voice gets. Recommended: 40dB</value>
+  </data>
+  <data name="MicAGCTargetLevelToolTip" xml:space="preserve">
+    <value>How much amplitude your voice will occupy.
+Recommended: 8000</value>
   </data>
 </root>

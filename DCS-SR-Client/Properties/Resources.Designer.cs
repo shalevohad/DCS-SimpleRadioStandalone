@@ -1443,6 +1443,43 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Client.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Max Gain (dB).
+        /// </summary>
+        public static string MicAGCMaxDB {
+            get {
+                return ResourceManager.GetString("MicAGCMaxDB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Amount of volume &apos;boost&apos; your voice gets. Recommended: 40dB.
+        /// </summary>
+        public static string MicAGCMaxDBToolTip {
+            get {
+                return ResourceManager.GetString("MicAGCMaxDBToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Target Level (&quot;loudness&quot;).
+        /// </summary>
+        public static string MicAGCTargetLevel {
+            get {
+                return ResourceManager.GetString("MicAGCTargetLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to How much amplitude your voice will occupy.
+        ///Recommended: 8000.
+        /// </summary>
+        public static string MicAGCTargetLevelToolTip {
+            get {
+                return ResourceManager.GetString("MicAGCTargetLevelToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Microphone Noise Suppression .
         /// </summary>
         public static string MicDenoise {

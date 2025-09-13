@@ -479,6 +479,26 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
         }
     }
 
+    public int MicAGCMaxDB
+    {
+        get => _globalSettings.GetClientSettingInt(GlobalSettingsKeys.AGCLevelMax);
+        set
+        {
+            _globalSettings.SetClientSetting(GlobalSettingsKeys.AGCLevelMax, value);
+            NotifyPropertyChanged();
+        }
+    }
+
+    public int MicAGCTarget
+    {
+        get => _globalSettings.GetClientSettingInt(GlobalSettingsKeys.AGCTarget);
+        set
+        {
+            _globalSettings.SetClientSetting(GlobalSettingsKeys.AGCTarget, value);
+            NotifyPropertyChanged();
+        }
+    }
+
     public bool MicDenoise
     {
         get => _globalSettings.GetClientSettingBool(GlobalSettingsKeys.Denoise);

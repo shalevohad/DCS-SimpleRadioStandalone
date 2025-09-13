@@ -11,6 +11,7 @@ namespace Ciribob.DCS.SimpleRadio.Standalone.Common.Settings;
 
 public enum GlobalSettingsKeys
 {
+    Version,
     MinimiseToTray,
     StartMinimised,
 
@@ -238,8 +239,11 @@ public class GlobalSettingsStore
         { GlobalSettingsKeys.SettingsProfiles.ToString(), new[] { "default.cfg" } }
     };
 
+    private static readonly int CurrentVersion = 1;
+
     private readonly Dictionary<string, string> defaultGlobalSettings = new()
     {
+        { GlobalSettingsKeys.Version.ToString(), "0" },
         { GlobalSettingsKeys.AutoConnect.ToString(), "true" },
         { GlobalSettingsKeys.AutoConnectPrompt.ToString(), "false" },
         { GlobalSettingsKeys.AutoConnectMismatchPrompt.ToString(), "true" },
@@ -288,9 +292,9 @@ public class GlobalSettingsStore
 
 
         { GlobalSettingsKeys.AGC.ToString(), "true" },
-        { GlobalSettingsKeys.AGCTarget.ToString(), "30000" },
+        { GlobalSettingsKeys.AGCTarget.ToString(), "14000" },
         { GlobalSettingsKeys.AGCDecrement.ToString(), "-60" },
-        { GlobalSettingsKeys.AGCLevelMax.ToString(), "68" },
+        { GlobalSettingsKeys.AGCLevelMax.ToString(), "40" },
 
         { GlobalSettingsKeys.Denoise.ToString(), "true" },
         { GlobalSettingsKeys.DenoiseAttenuation.ToString(), "-30" },
@@ -361,17 +365,20 @@ public class GlobalSettingsStore
             }
 
             _configuration = Configuration.LoadFromFile(Path + ConfigFileName);
+            UpgradeSettings();
         }
         catch (FileNotFoundException)
         {
             Logger.Info(
                 $"Did not find client config file at path ${Path}/${ConfigFileName}, initialising with default config");
 
-            _configuration = new Configuration();
-            _configuration.Add(new Section("Position Settings"));
-            _configuration.Add(new Section("Client Settings"));
-            _configuration.Add(new Section("Network Settings"));
-
+            _configuration = new Configuration
+            {
+                new Section("Position Settings"),
+                new Section("Client Settings"),
+                new Section("Network Settings")
+            };
+            SetClientSetting(GlobalSettingsKeys.Version, CurrentVersion);
             Save();
         }
         catch (ParserException ex)
@@ -395,10 +402,13 @@ public class GlobalSettingsStore
                 Logger.Error(e, "Failed to create backup of corrupted config file, ignoring");
             }
 
-            _configuration = new Configuration();
-            _configuration.Add(new Section("Position Settings"));
-            _configuration.Add(new Section("Client Settings"));
-            _configuration.Add(new Section("Network Settings"));
+            _configuration = new Configuration
+            {
+                new Section("Position Settings"),
+                new Section("Client Settings"),
+                new Section("Network Settings")
+            };
+            SetClientSetting(GlobalSettingsKeys.Version, CurrentVersion);
 
             Save();
         }
@@ -620,6 +630,26 @@ public class GlobalSettingsStore
             {
                 Logger.Error("Unable to save settings!");
             }
+        }
+    }
+
+    private void UpgradeSettings()
+    {
+        var loadedVersion = GetClientSettingInt(GlobalSettingsKeys.Version);
+        if (loadedVersion == 0)
+        {
+            // Update to V1:
+            // * Force enable AGC again.
+            // * Fix up the values.
+            SetClientSetting(GlobalSettingsKeys.AGC, true);
+            SetClientSetting(GlobalSettingsKeys.AGCLevelMax, 45);
+            SetClientSetting(GlobalSettingsKeys.AGCTarget, 14000);
+
+            // Upgrade done
+            SetClientSetting(GlobalSettingsKeys.Version, 1);
+
+            Save();
+            loadedVersion = 1;
         }
     }
 }
